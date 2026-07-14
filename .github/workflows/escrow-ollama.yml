@@ -1,0 +1,39 @@
+name: Escrow local Ollama
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-with-ollama:
+    # This targets your own Mac after you add it as a repository runner.
+    runs-on: [self-hosted, macOS]
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Run Escrow with local Qwen
+        id: escrow
+        uses: ./
+        with:
+          local-provider: ollama
+          model: qwen2.5-coder:3b
+          execute: "true"
+          allow-network: "false"
+
+      - name: Upload Escrow reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: escrow-ollama-report-${{ github.run_id }}
+          path: .escrow-artifacts/
+          if-no-files-found: warn
+          include-hidden-files: true
+
+      - name: Enforce Escrow result
+        if: always()
+        run: node scripts/verify-ci-report.mjs .escrow-artifacts/escrow-report.json "${{ steps.escrow.outputs.status || '4' }}"

@@ -4,8 +4,12 @@ author: PlutonicSauce
 
 inputs:
   openai-api-key:
-    description: OpenAI API key used only by the nested Codex claim-extraction process.
-    required: true
+    description: OpenAI API key used only by the hosted Codex claim-extraction process. Leave empty for local Ollama or LM Studio mode.
+    required: false
+  local-provider:
+    description: "Optional local provider: ollama or lmstudio. Requires a self-hosted runner that can reach it."
+    required: false
+    default: ""
   model:
     description: Codex model used to interpret repository instructions.
     required: false
@@ -65,6 +69,7 @@ runs:
       shell: bash
       env:
         INPUT_OPENAI_API_KEY: ${{ inputs.openai-api-key }}
+        INPUT_LOCAL_PROVIDER: ${{ inputs.local-provider }}
         INPUT_MODEL: ${{ inputs.model }}
         INPUT_EXECUTE: ${{ inputs.execute }}
         INPUT_ALLOW_NETWORK: ${{ inputs.allow-network }}
@@ -74,6 +79,13 @@ runs:
         case "$INPUT_REPORT_DIRECTORY" in
           ""|/*|*".."*)
             echo "report-directory must be a safe relative path" >&2
+            exit 2
+            ;;
+        esac
+        case "$INPUT_LOCAL_PROVIDER" in
+          ""|ollama|lmstudio) ;;
+          *)
+            echo "local-provider must be empty, ollama, or lmstudio" >&2
             exit 2
             ;;
         esac
@@ -89,8 +101,17 @@ runs:
         )
         if [ "$INPUT_EXECUTE" = "true" ]; then command+=(--execute); fi
         if [ "$INPUT_ALLOW_NETWORK" = "true" ]; then command+=(--allow-network); fi
+        if [ -n "$INPUT_LOCAL_PROVIDER" ]; then
+          export ESCROW_CODEX_OSS="$INPUT_LOCAL_PROVIDER"
+          unset CODEX_API_KEY
+        elif [ -z "$INPUT_OPENAI_API_KEY" ]; then
+          echo "openai-api-key is required unless local-provider is set" >&2
+          exit 2
+        else
+          export CODEX_API_KEY="$INPUT_OPENAI_API_KEY"
+        fi
         set +e
-        PATH="$RUNNER_TEMP/escrow-codex-cli/node_modules/.bin:$PATH" CODEX_HOME="$RUNNER_TEMP/escrow-codex-home" CODEX_API_KEY="$INPUT_OPENAI_API_KEY" "${command[@]}"
+        PATH="$RUNNER_TEMP/escrow-codex-cli/node_modules/.bin:$PATH" CODEX_HOME="$RUNNER_TEMP/escrow-codex-home" "${command[@]}"
         escrow_status=$?
         set -e
         node "$GITHUB_ACTION_PATH/scripts/render-ci-summary.mjs" "$report_directory/escrow-report.json" "$report_directory/escrow-summary.md" "$escrow_status"
