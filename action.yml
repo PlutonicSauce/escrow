@@ -14,6 +14,10 @@ inputs:
     description: Codex model used to interpret repository instructions.
     required: false
     default: gpt-5.6-luna
+  target:
+    description: Optional repository-relative directory whose instruction scope should be checked.
+    required: false
+    default: ""
   execute:
     description: Run documented commands in temporary Git worktrees.
     required: false
@@ -71,6 +75,7 @@ runs:
         INPUT_OPENAI_API_KEY: ${{ inputs.openai-api-key }}
         INPUT_LOCAL_PROVIDER: ${{ inputs.local-provider }}
         INPUT_MODEL: ${{ inputs.model }}
+        INPUT_TARGET: ${{ inputs.target }}
         INPUT_EXECUTE: ${{ inputs.execute }}
         INPUT_ALLOW_NETWORK: ${{ inputs.allow-network }}
         INPUT_REPORT_DIRECTORY: ${{ inputs.report-directory }}
@@ -99,6 +104,7 @@ runs:
           --markdown "$report_directory/escrow-report.md"
           --html "$report_directory/escrow-report.html"
         )
+        if [ -n "$INPUT_TARGET" ]; then command+=(--target "$INPUT_TARGET"); fi
         if [ "$INPUT_EXECUTE" = "true" ]; then command+=(--execute); fi
         if [ "$INPUT_ALLOW_NETWORK" = "true" ]; then command+=(--allow-network); fi
         if [ -n "$INPUT_LOCAL_PROVIDER" ]; then

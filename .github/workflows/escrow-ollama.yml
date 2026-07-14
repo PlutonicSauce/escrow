@@ -22,6 +22,7 @@ jobs:
         with:
           local-provider: ollama
           model: qwen2.5-coder:3b
+          target: demo/sample-monorepo
           execute: "true"
           allow-network: "false"
 
