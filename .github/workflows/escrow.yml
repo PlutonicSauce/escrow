@@ -40,6 +40,7 @@ jobs:
           name: escrow-report-${{ github.run_id }}
           path: .escrow-artifacts/
           if-no-files-found: warn
+          include-hidden-files: true
 
       - name: Publish pull-request summary
         if: always() && github.event_name == 'pull_request'

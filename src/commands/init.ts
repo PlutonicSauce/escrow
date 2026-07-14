@@ -51,6 +51,7 @@ jobs:
         with:
           name: escrow-report
           path: .escrow-artifacts/
+          include-hidden-files: true
 
       - name: Publish pull-request summary
         if: always() && github.event_name == 'pull_request'
