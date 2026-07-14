@@ -44,6 +44,16 @@ describe("renderHtmlReport", () => {
     expect(output).toContain("Filter claims by status");
     expect(output).toContain('name="claim-filter"');
     expect(output).toContain(
+      'id="filter-attention" type="radio" name="claim-filter" checked',
+    );
+    expect(output).toContain(
+      'id="filter-advisory" type="radio" name="claim-filter"',
+    );
+    expect(output).toContain("Show all");
+    expect(output).toContain(
+      ".filters:has(#filter-attention:checked)+.claim-list",
+    );
+    expect(output).toContain(
       ".filters:has(#filter-failed:checked)+.claim-list",
     );
     expect(output).toContain('<details class="command-output">');

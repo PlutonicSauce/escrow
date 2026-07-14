@@ -14,14 +14,12 @@
               "sourceFile": { "$ref": "#/$defs/nonEmptyString" },
               "lineStart": { "$ref": "#/$defs/positiveInteger" },
               "lineEnd": { "$ref": "#/$defs/positiveInteger" },
-              "originalText": { "$ref": "#/$defs/nonEmptyString" },
               "normalizedValue": { "$ref": "#/$defs/nonEmptyString" },
-              "scopeDirectory": { "$ref": "#/$defs/nonEmptyString" },
               "referencedPath": { "$ref": "#/$defs/nonEmptyString" },
               "confidence": { "$ref": "#/$defs/confidence" },
               "extractionReason": { "$ref": "#/$defs/nonEmptyString" }
             },
-            "required": ["id", "type", "sourceFile", "lineStart", "lineEnd", "originalText", "normalizedValue", "scopeDirectory", "referencedPath", "confidence", "extractionReason"],
+            "required": ["id", "type", "sourceFile", "lineStart", "lineEnd", "normalizedValue", "referencedPath", "confidence", "extractionReason"],
             "additionalProperties": false
           },
           {
@@ -32,14 +30,12 @@
               "sourceFile": { "$ref": "#/$defs/nonEmptyString" },
               "lineStart": { "$ref": "#/$defs/positiveInteger" },
               "lineEnd": { "$ref": "#/$defs/positiveInteger" },
-              "originalText": { "$ref": "#/$defs/nonEmptyString" },
               "normalizedValue": { "$ref": "#/$defs/nonEmptyString" },
-              "scopeDirectory": { "$ref": "#/$defs/nonEmptyString" },
               "packageManager": { "$ref": "#/$defs/packageManager" },
               "confidence": { "$ref": "#/$defs/confidence" },
               "extractionReason": { "$ref": "#/$defs/nonEmptyString" }
             },
-            "required": ["id", "type", "sourceFile", "lineStart", "lineEnd", "originalText", "normalizedValue", "scopeDirectory", "packageManager", "confidence", "extractionReason"],
+            "required": ["id", "type", "sourceFile", "lineStart", "lineEnd", "normalizedValue", "packageManager", "confidence", "extractionReason"],
             "additionalProperties": false
           },
           {
@@ -50,14 +46,12 @@
               "sourceFile": { "$ref": "#/$defs/nonEmptyString" },
               "lineStart": { "$ref": "#/$defs/positiveInteger" },
               "lineEnd": { "$ref": "#/$defs/positiveInteger" },
-              "originalText": { "$ref": "#/$defs/nonEmptyString" },
               "normalizedValue": { "$ref": "#/$defs/nonEmptyString" },
-              "scopeDirectory": { "$ref": "#/$defs/nonEmptyString" },
               "packageScript": { "$ref": "#/$defs/nonEmptyString" },
               "confidence": { "$ref": "#/$defs/confidence" },
               "extractionReason": { "$ref": "#/$defs/nonEmptyString" }
             },
-            "required": ["id", "type", "sourceFile", "lineStart", "lineEnd", "originalText", "normalizedValue", "scopeDirectory", "packageScript", "confidence", "extractionReason"],
+            "required": ["id", "type", "sourceFile", "lineStart", "lineEnd", "normalizedValue", "packageScript", "confidence", "extractionReason"],
             "additionalProperties": false
           },
           {
@@ -68,15 +62,13 @@
               "sourceFile": { "$ref": "#/$defs/nonEmptyString" },
               "lineStart": { "$ref": "#/$defs/positiveInteger" },
               "lineEnd": { "$ref": "#/$defs/positiveInteger" },
-              "originalText": { "$ref": "#/$defs/nonEmptyString" },
               "normalizedValue": { "$ref": "#/$defs/nonEmptyString" },
-              "scopeDirectory": { "$ref": "#/$defs/nonEmptyString" },
               "command": { "$ref": "#/$defs/nonEmptyString" },
               "packageScript": { "$ref": "#/$defs/nonEmptyString" },
               "confidence": { "$ref": "#/$defs/confidence" },
               "extractionReason": { "$ref": "#/$defs/nonEmptyString" }
             },
-            "required": ["id", "type", "sourceFile", "lineStart", "lineEnd", "originalText", "normalizedValue", "scopeDirectory", "command", "packageScript", "confidence", "extractionReason"],
+            "required": ["id", "type", "sourceFile", "lineStart", "lineEnd", "normalizedValue", "command", "packageScript", "confidence", "extractionReason"],
             "additionalProperties": false
           },
           {
@@ -87,15 +79,13 @@
               "sourceFile": { "$ref": "#/$defs/nonEmptyString" },
               "lineStart": { "$ref": "#/$defs/positiveInteger" },
               "lineEnd": { "$ref": "#/$defs/positiveInteger" },
-              "originalText": { "$ref": "#/$defs/nonEmptyString" },
               "normalizedValue": { "$ref": "#/$defs/nonEmptyString" },
-              "scopeDirectory": { "$ref": "#/$defs/nonEmptyString" },
               "packageManager": { "$ref": "#/$defs/packageManager" },
               "packageScript": { "$ref": "#/$defs/nonEmptyString" },
               "confidence": { "$ref": "#/$defs/confidence" },
               "extractionReason": { "$ref": "#/$defs/nonEmptyString" }
             },
-            "required": ["id", "type", "sourceFile", "lineStart", "lineEnd", "originalText", "normalizedValue", "scopeDirectory", "packageManager", "packageScript", "confidence", "extractionReason"],
+            "required": ["id", "type", "sourceFile", "lineStart", "lineEnd", "normalizedValue", "packageManager", "packageScript", "confidence", "extractionReason"],
             "additionalProperties": false
           },
           {
@@ -106,16 +96,14 @@
               "sourceFile": { "$ref": "#/$defs/nonEmptyString" },
               "lineStart": { "$ref": "#/$defs/positiveInteger" },
               "lineEnd": { "$ref": "#/$defs/positiveInteger" },
-              "originalText": { "$ref": "#/$defs/nonEmptyString" },
               "normalizedValue": { "$ref": "#/$defs/nonEmptyString" },
-              "scopeDirectory": { "$ref": "#/$defs/nonEmptyString" },
               "command": { "$ref": "#/$defs/nonEmptyString" },
               "packageManager": { "$ref": "#/$defs/packageManager" },
               "packageScript": { "$ref": "#/$defs/nonEmptyString" },
               "confidence": { "$ref": "#/$defs/confidence" },
               "extractionReason": { "$ref": "#/$defs/nonEmptyString" }
             },
-            "required": ["id", "type", "sourceFile", "lineStart", "lineEnd", "originalText", "normalizedValue", "scopeDirectory", "command", "packageManager", "packageScript", "confidence", "extractionReason"],
+            "required": ["id", "type", "sourceFile", "lineStart", "lineEnd", "normalizedValue", "command", "packageManager", "packageScript", "confidence", "extractionReason"],
             "additionalProperties": false
           },
           {
@@ -126,9 +114,7 @@
               "sourceFile": { "$ref": "#/$defs/nonEmptyString" },
               "lineStart": { "$ref": "#/$defs/positiveInteger" },
               "lineEnd": { "$ref": "#/$defs/positiveInteger" },
-              "originalText": { "$ref": "#/$defs/nonEmptyString" },
               "normalizedValue": { "$ref": "#/$defs/nonEmptyString" },
-              "scopeDirectory": { "$ref": "#/$defs/nonEmptyString" },
               "dependencyNames": {
                 "type": "array",
                 "items": { "$ref": "#/$defs/nonEmptyString" },
@@ -137,7 +123,7 @@
               "confidence": { "$ref": "#/$defs/confidence" },
               "extractionReason": { "$ref": "#/$defs/nonEmptyString" }
             },
-            "required": ["id", "type", "sourceFile", "lineStart", "lineEnd", "originalText", "normalizedValue", "scopeDirectory", "dependencyNames", "confidence", "extractionReason"],
+            "required": ["id", "type", "sourceFile", "lineStart", "lineEnd", "normalizedValue", "dependencyNames", "confidence", "extractionReason"],
             "additionalProperties": false
           },
           {
@@ -148,14 +134,12 @@
               "sourceFile": { "$ref": "#/$defs/nonEmptyString" },
               "lineStart": { "$ref": "#/$defs/positiveInteger" },
               "lineEnd": { "$ref": "#/$defs/positiveInteger" },
-              "originalText": { "$ref": "#/$defs/nonEmptyString" },
               "normalizedValue": { "$ref": "#/$defs/nonEmptyString" },
-              "scopeDirectory": { "$ref": "#/$defs/nonEmptyString" },
               "command": { "$ref": "#/$defs/nonEmptyString" },
               "confidence": { "$ref": "#/$defs/confidence" },
               "extractionReason": { "$ref": "#/$defs/nonEmptyString" }
             },
-            "required": ["id", "type", "sourceFile", "lineStart", "lineEnd", "originalText", "normalizedValue", "scopeDirectory", "command", "confidence", "extractionReason"],
+            "required": ["id", "type", "sourceFile", "lineStart", "lineEnd", "normalizedValue", "command", "confidence", "extractionReason"],
             "additionalProperties": false
           },
           {
@@ -166,13 +150,11 @@
               "sourceFile": { "$ref": "#/$defs/nonEmptyString" },
               "lineStart": { "$ref": "#/$defs/positiveInteger" },
               "lineEnd": { "$ref": "#/$defs/positiveInteger" },
-              "originalText": { "$ref": "#/$defs/nonEmptyString" },
               "normalizedValue": { "$ref": "#/$defs/nonEmptyString" },
-              "scopeDirectory": { "$ref": "#/$defs/nonEmptyString" },
               "confidence": { "$ref": "#/$defs/confidence" },
               "extractionReason": { "$ref": "#/$defs/nonEmptyString" }
             },
-            "required": ["id", "type", "sourceFile", "lineStart", "lineEnd", "originalText", "normalizedValue", "scopeDirectory", "confidence", "extractionReason"],
+            "required": ["id", "type", "sourceFile", "lineStart", "lineEnd", "normalizedValue", "confidence", "extractionReason"],
             "additionalProperties": false
           }
         ]

@@ -108,4 +108,29 @@ describe("Milestone 13 demo assets", () => {
     expect(demoScript).toContain("repair");
     expect(license).toContain("MIT License");
   });
+
+  it("uses Escrow consistently across public package and documentation surfaces", async () => {
+    const publicFiles = await Promise.all(
+      [
+        "README.md",
+        "AGENTS.md",
+        "SPEC.md",
+        "PLAN.md",
+        "IMPLEMENTATION.md",
+        "docs/architecture.md",
+        "docs/demo-script.md",
+        "docs/devpost-submission.md",
+      ].map((path) => readFile(join(PROJECT_ROOT, path), "utf8")),
+    );
+    const packageJson = JSON.parse(
+      await readFile(join(PROJECT_ROOT, "package.json"), "utf8"),
+    ) as { name: string; bin: Record<string, string> };
+
+    expect(packageJson.name).toBe("escrow");
+    expect(packageJson.bin).toEqual({ escrow: "dist/index.js" });
+    for (const content of publicFiles) {
+      expect(content).toContain("Escrow");
+      expect(content).not.toMatch(/AgentContract|ProofCatcher/u);
+    }
+  });
 });

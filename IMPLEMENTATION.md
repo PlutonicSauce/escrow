@@ -1,19 +1,16 @@
-# AgentContract Implementation Log
+# Escrow Implementation Log
 
 Use this file to record completed work after each milestone.
 
 ## Current state
 
-
-No implementation milestones have been completed.
-
-Milestones 1 through 13 are complete. AgentContract discovers effective local
+Milestones 1 through 14 are complete. Escrow discovers effective local
 instructions, extracts schema-constrained claims with Codex, assigns verdicts
 with deterministic validators, optionally runs documented commands in isolated
 Git worktrees, resolves supported scopes and conflicts, emits console/JSON/
 Markdown/HTML reports, and can preview or apply restricted instruction-only
-repairs. The final audit below records one corrected repair-isolation defect and
-the remaining documented limitations and submission risks.
+repairs. It also provides a loopback-only local browser interface over those
+same application services and report models.
 
 ## Log format
 
@@ -69,8 +66,8 @@ For each completed milestone, add:
 - Created a Node.js package requiring Node.js 20 or newer.
 - Configured strict TypeScript compilation to ESM output in `dist/`.
 - Configured Vitest to run focused unit tests from `test/unit/`.
-- Added the Commander-based `agentcontract` CLI entry point.
-- Added `agentcontract check <repository>` with optional
+- Added the Commander-based `escrow` CLI entry point.
+- Added `escrow check <repository>` with optional
   `--target <directory>` argument parsing.
 - Added explicit shared exit codes and consistent handling for CLI usage errors
   and unexpected internal errors.
@@ -376,7 +373,7 @@ Final verification after the instruction-symlink boundary test:
   failed-claim evidence.
 - Added advisory type/status consistency checks and defensive deterministic
   aggregation that never counts advisory claim types as passed or failed.
-- Added `ReportSummary`, `OverallStatus`, and `AgentContractReport` models.
+- Added `ReportSummary`, `OverallStatus`, and `EscrowReport` models.
 - Kept the conflicts collection structurally empty because conflict modeling
   and analysis belong to Milestone 10.
 - Added pure summary aggregation, overall-status calculation, and report
@@ -1398,7 +1395,7 @@ Final verification after updating PLAN.md and IMPLEMENTATION.md:
 
 - Claims remain manually constructed; dependency validation is not connected
   to extraction or CLI report flags.
-- Only the nine explicitly listed framework/tool names are mapped. Unlisted
+- Only the ten explicitly listed framework/tool names are mapped. Unlisted
   aliases and other frameworks remain inconclusive.
 - A malformed nearest package file is inconclusive and does not fall back to a
   broader package file.
@@ -1418,7 +1415,7 @@ Final verification after updating PLAN.md and IMPLEMENTATION.md:
 
 ### Audit findings and fix
 
-- Confirmed the deterministic mapping table still contains exactly the nine
+- Confirmed the deterministic mapping table still contains exactly the ten
   SPEC mappings and no additional framework aliases.
 - Confirmed every supported display name is matched case-insensitively and
   produces the same canonical mapping and evidence regardless of input case.
@@ -1529,7 +1526,7 @@ Final verification after updating IMPLEMENTATION.md:
 
 - Claims remain manually constructed; dependency validation is not connected
   to extraction or CLI report flags.
-- Only the nine explicitly listed framework/tool names are mapped. Unlisted
+- Only the ten explicitly listed framework/tool names are mapped. Unlisted
   aliases and other frameworks remain inconclusive.
 - A malformed nearest package file remains inconclusive and does not fall back
   to a broader package file.
@@ -1564,7 +1561,7 @@ Final verification after updating IMPLEMENTATION.md:
   involved, prompt input is sent over stdin, stdout/stderr are captured, and a
   timeout first terminates and then force-kills an unresponsive Codex process.
 - Invoked Codex with GPT-5.6 by default, with precedence of `--model` over
-  `AGENTCONTRACT_CODEX_MODEL` over the default.
+  `ESCROW_CODEX_MODEL` over the default.
 - Used disabled approval prompts, `--sandbox read-only`, `--ephemeral`,
   `--ignore-user-config`, and `project_doc_max_bytes=0`. The last setting keeps
   repository instruction files from being independently loaded at a higher
@@ -1583,7 +1580,7 @@ Final verification after updating IMPLEMENTATION.md:
   errors, nonzero exit, timeout, empty output, malformed JSON, schema mismatch,
   unsupported claim type, missing source data, forbidden status fields, and
   source-preservation failures.
-- Extended `agentcontract check` with `--model`, instruction discovery followed
+- Extended `escrow check` with `--model`, instruction discovery followed
   by extraction, and handoff of path, package-manager, package-script, and
   dependency claims to the existing deterministic validators. `command_runs`
   and advisory claims are preserved as deferred claims without AI or premature
@@ -1591,7 +1588,7 @@ Final verification after updating IMPLEMENTATION.md:
 - Added a separately configured manual integration test and
   `test:codex-integration` script. Normal `npm test` continues to select only
   unit tests; the manual test runs Codex only when
-  `AGENTCONTRACT_RUN_CODEX_INTEGRATION=1` and the Codex executable is installed.
+  `ESCROW_RUN_CODEX_INTEGRATION=1` and the Codex executable is installed.
 - Added no runtime dependencies and no documented-command execution, conflict
   analysis, repair mode, Markdown reporting, HTML reporting, or Milestone 9
   behavior.
@@ -1991,10 +1988,10 @@ npm test
   Full suite: PASS, 18 test files, 296 tests, duration 3.88s
 
 git worktree list --porcelain
-  PASS: only the active ProofCatcher worktree is registered
+  PASS: only the active Escrow worktree is registered
 
 Temporary-directory leak check
-  PASS: no agentcontract-worktree-* or agentcontract-command-test-* entries
+  PASS: no escrow-worktree-* or escrow-command-test-* entries
 
 Final verification after PLAN.md and IMPLEMENTATION.md updates:
   npm run build: PASS
@@ -2130,10 +2127,10 @@ npm run test:codex-integration
   duration 561ms; no live Codex request was made
 
 git worktree list --porcelain
-  PASS: only the active ProofCatcher worktree is registered
+  PASS: only the active Escrow worktree is registered
 
 Temporary-directory leak check
-  PASS: no agentcontract-worktree-* or agentcontract-command-test-* entries
+  PASS: no escrow-worktree-* or escrow-command-test-* entries
 ```
 
 #### Review limitations
@@ -2448,7 +2445,7 @@ npm run test:codex-integration
 
 ### Completed work
 
-- Added a pure Markdown renderer that accepts only `AgentContractReport` and
+- Added a pure Markdown renderer that accepts only `EscrowReport` and
   emits an attachment-ready report with product name, repository, target,
   generation metadata, all seven summary totals, overall status, instruction
   chain, complete claims, overrides, and conflicts.
@@ -2562,7 +2559,7 @@ npm run test:codex-integration
 Shared reportFixture.ts sample generation through Vite's in-process TypeScript
 loader and the final built renderers
   PASS: wrote sample-report.md and sample-report.html under
-  /private/tmp/agentcontract-m11-samples from the same rich fixture used by
+  /private/tmp/escrow-m11-samples from the same rich fixture used by
   cross-format tests
 
 wc, sed, rg, and file inspection of generated samples
@@ -2594,7 +2591,7 @@ npm run test:codex-integration
 
 ### Known limitations
 
-- Report output parent directories must already exist; AgentContract does not
+- Report output parent directories must already exist; Escrow does not
   create arbitrary directory trees for requested file paths.
 - Expandable Markdown command output relies on renderers that permit standard
   `<details>` HTML, including GitHub. In renderers that disable raw HTML, the
@@ -2618,7 +2615,7 @@ npm run test:codex-integration
 
 - Audited only console, JSON, Markdown, and static HTML report generation and
   the check-command data flow that invokes those renderers.
-- Confirmed `checkRepository` constructs one `AgentContractReport` and passes
+- Confirmed `checkRepository` constructs one `EscrowReport` and passes
   that same object to every requested renderer. Each renderer accepts only the
   shared report model and remains a pure, non-mutating formatter.
 - Confirmed all formats use the shared deterministic overall status, summary
@@ -2692,7 +2689,7 @@ npm run test:codex-integration
 
 ### Completed work
 
-- Added `agentcontract fix <repository>` with `--target`, `--apply`, `--model`,
+- Added `escrow fix <repository>` with `--target`, `--apply`, `--model`,
   `--execute`, `--allow-network`, `--timeout`, and `--keep-worktree`. The
   execution-related options are passed through to the existing isolated command
   validator for both before and after evaluation.
@@ -2705,7 +2702,7 @@ npm run test:codex-integration
   malformed, schema-invalid, timed-out, nonzero, and startup failures are
   rejected with the Codex failure exit code.
 - Runs repair generation non-interactively with GPT-5.6 by default, preserving
-  `--model` and `AGENTCONTRACT_CODEX_MODEL` precedence. Codex uses a read-only
+  `--model` and `ESCROW_CODEX_MODEL` precedence. Codex uses a read-only
   sandbox with approval prompts, shell tools, shell snapshots, hooks, apps,
   search, MCP servers, user configuration, and repository rules disabled.
 - Added a prompt that treats all supplied repository content as untrusted data,
@@ -2713,7 +2710,7 @@ npm run test:codex-integration
   evidence, exact allowed paths, and the all-other-paths prohibition, and asks
   for the smallest truthful documentation patch without code changes.
 - Creates one detached temporary repair worktree. Codex cannot write to it;
-  AgentContract writes the returned patch outside the checkout, runs
+  Escrow writes the returned patch outside the checkout, runs
   `git apply --check`, and applies it only to that worktree for deterministic
   inspection and revalidation.
 - Restricts changes to existing effective-chain files named exactly
@@ -2721,7 +2718,7 @@ npm run test:codex-integration
   source files, tests, package metadata, lockfiles, build/CI files, untracked or
   staged additions, deletions, renames, copies, mode changes, and symlinks are
   rejected before revalidation.
-- Re-runs AgentContract on the patched worktree using the original target and
+- Re-runs Escrow on the patched worktree using the original target and
   options. When `--execute` was supplied, documented commands are executed
   again through the existing command policy and temporary-command-worktree
   isolation.
@@ -2845,8 +2842,8 @@ node dist/index.js fix --help
   and command-worktree retention options
 
 find /private/tmp /private/var/folders/5f/fsdf_7l96y58k9vj77yty4b00000gp/T \
-  -maxdepth 1 -type d -name 'agentcontract-worktree-*' -print
-  PASS; no unexpected temporary AgentContract worktree directory remained
+  -maxdepth 1 -type d -name 'escrow-worktree-*' -print
+  PASS; no unexpected temporary Escrow worktree directory remained
 ```
 
 ### Known limitations
@@ -2887,7 +2884,7 @@ find /private/tmp /private/var/folders/5f/fsdf_7l96y58k9vj77yty4b00000gp/T \
   `GIT binary patch`, and standard `Binary files ... differ` markers.
 - Added post-application defense in depth for allowed instruction files: every
   result must remain a regular, non-symlink, NUL-free, strictly valid UTF-8 text
-  file before AgentContract revalidation can begin.
+  file before Escrow revalidation can begin.
 - Updated the Codex repair prompt to explicitly forbid binary patches. This is
   advisory defense only; the verdict remains entirely deterministic.
 - Added no new repair capability, product feature, dependency, or Milestone 13
@@ -2979,8 +2976,8 @@ rg inspection of repair/worktree production Git operations
   PASS; no commit or push invocation exists
 
 find /private/tmp /private/var/folders/5f/fsdf_7l96y58k9vj77yty4b00000gp/T \
-  -maxdepth 1 -type d -name 'agentcontract-worktree-*' -print
-  PASS; no unexpected temporary AgentContract worktree directory remained
+  -maxdepth 1 -type d -name 'escrow-worktree-*' -print
+  PASS; no unexpected temporary Escrow worktree directory remained
 ```
 
 ### Known limitations
@@ -3024,7 +3021,7 @@ find /private/tmp /private/var/folders/5f/fsdf_7l96y58k9vj77yty4b00000gp/T \
 - Added the MIT `LICENSE`, `docs/architecture.md`, and a reproducible
   `docs/demo-script.md`. The demo script works from committed temporary copies,
   keeps the project checkout unchanged, supports
-  `AGENTCONTRACT_DEMO_MODEL`, and defaults to the available GPT-5.6 Sol variant.
+  `ESCROW_DEMO_MODEL`, and defaults to the available GPT-5.6 Sol variant.
 - Added four focused demo integration tests for fixture truth, intentional
   failures, nested override content, dangerous-command blocking, report-format
   consistency, documentation coverage, and the license. Normal CI remains
@@ -3128,7 +3125,7 @@ Measured successful demo sequence
 
 Temporary worktree verification
   git worktree list: only the active temporary demo checkout
-  find agentcontract-worktree-*: no unexpected directories
+  find escrow-worktree-*: no unexpected directories
 ```
 
 The initial generic `gpt-5.6` attempt was rejected by the authenticated ChatGPT
@@ -3196,7 +3193,7 @@ npm ls --depth=0
 7. Console, JSON, Markdown, and HTML samples use one report object and agree on
    totals in the demo integration test.
 8. Preview changed nothing; verified apply changed only `AGENTS.md`.
-9. Both preview and apply reran AgentContract, and the final live check passed.
+9. Both preview and apply reran Escrow, and the final live check passed.
 10. All 402 normal tests pass.
 11. The measured successful demo sequence completed in 158.57 seconds.
 12. `npm ci`, build, and CLI help passed in a dependency-free temporary copy.
@@ -3322,15 +3319,15 @@ npm ls --depth=0
   TypeScript 5.9.3, Vitest 4.1.10, and @types/node 24.13.3 are development-only
 
 npm pack --dry-run --json --cache \
-  /private/tmp/agentcontract-final-audit-npm-cache
+  /private/tmp/escrow-final-audit-npm-cache
   PASS; 79,787-byte package, 378,853 bytes unpacked, 169 entries, executable
   dist/index.js, no bundled dependencies
 
-npm ci --prefix /private/tmp/agentcontract-final-audit-clean.bu3fut \
-  --cache /private/tmp/agentcontract-final-audit-clean-cache
-npm run build --prefix /private/tmp/agentcontract-final-audit-clean.bu3fut
-node /private/tmp/agentcontract-final-audit-clean.bu3fut/dist/index.js --help
-node /private/tmp/agentcontract-final-audit-clean.bu3fut/dist/index.js --version
+npm ci --prefix /private/tmp/escrow-final-audit-clean.bu3fut \
+  --cache /private/tmp/escrow-final-audit-clean-cache
+npm run build --prefix /private/tmp/escrow-final-audit-clean.bu3fut
+node /private/tmp/escrow-final-audit-clean.bu3fut/dist/index.js --help
+node /private/tmp/escrow-final-audit-clean.bu3fut/dist/index.js --version
   PASS; 50 packages installed, 51 audited, 0 vulnerabilities; build/help
   succeeded; version 0.1.0
 
@@ -3381,10 +3378,10 @@ npm run build && npm run typecheck && npm test && \
 
 git worktree list --porcelain
 find /private/tmp -maxdepth 2 \
-  (agentcontract-worktree-* | agentcontract-repair-* |
-   agentcontract-extraction-*)
+  (escrow-worktree-* | escrow-repair-* |
+   escrow-extraction-*)
   PASS; only the active project worktree remained; no unexpected temporary
-  AgentContract worktrees or process directories remained
+  Escrow worktrees or process directories remained
 ```
 
 The first clean-copy attempt accidentally invoked `npm ci` in the project
@@ -3420,7 +3417,7 @@ application behavior.
 
 - At the time of this audit, the workspace initially appeared to have an
   unborn `main` branch with untracked project files. Repository state was later
-  updated outside AgentContract: clean-machine onboarding verified tracked HEAD
+  updated outside Escrow: clean-machine onboarding verified tracked HEAD
   `3b7b25323e103dea0dd4e67a5ed73635380d97d1`, aligned local
   `main...origin/main`, and a successful local clone. Remote host availability
   was not required or independently tested.
@@ -3467,7 +3464,7 @@ Live demo model: gpt-5.6-sol
 ### Baseline clean-copy run
 
 Temporary source copy:
-`/private/tmp/agentcontract-onboarding-baseline.UOP69c`
+`/private/tmp/escrow-onboarding-baseline.UOP69c`
 
 ```text
 npm ci
@@ -3518,13 +3515,13 @@ node dist/index.js fix <sample> --model gpt-5.6-sol
 
 After preview, both fixture repositories had clean `git status`, each
 `git worktree list` contained only its active checkout, and no unexpected
-`agentcontract-worktree-*`, `agentcontract-repair-*`, or
-`agentcontract-extraction-*` directory remained.
+`escrow-worktree-*`, `escrow-repair-*`, or
+`escrow-extraction-*` directory remained.
 
 ### Repeated final clean-copy run
 
 Temporary source copy:
-`/private/tmp/agentcontract-onboarding-final.jK81eA`
+`/private/tmp/escrow-onboarding-final.jK81eA`
 
 The second copy again began without `node_modules` or `dist` and repeated the
 required judge/developer flow:
@@ -3561,9 +3558,9 @@ JSON.parse(<onboarding.json>)
 
 git status --short
 git worktree list --porcelain
-find /private/tmp -maxdepth 2 <AgentContract temporary-directory patterns>
+find /private/tmp -maxdepth 2 <Escrow temporary-directory patterns>
   PASS; active fixture unchanged; only its active worktree remained; no
-  unexpected AgentContract process or worktree directory remained
+  unexpected Escrow process or worktree directory remained
 ```
 
 ### Undocumented assumptions and missing steps
@@ -3575,7 +3572,7 @@ find /private/tmp -maxdepth 2 <AgentContract temporary-directory patterns>
 - The first two passes used complete dependency-free source copies because the
   preceding audit had recorded an unborn/untracked workspace. A final state
   check found that tracked repository history was now present, so a third pass
-  used a true local clone. No AgentContract command committed, pushed, or
+  used a true local clone. No Escrow command committed, pushed, or
   otherwise changed repository history.
 - `npm link` is explicitly optional. The audit selected the documented direct
   `node dist/index.js` route, avoiding an unnecessary global mutation.
@@ -3588,7 +3585,7 @@ find /private/tmp -maxdepth 2 <AgentContract temporary-directory patterns>
 - Report parent directories must exist. README lists this limitation, and the
   demo preparation creates the directory before report generation.
 - The managed audit harness required permission for Codex's own state/network
-  access. That approval is environment-specific and is not an AgentContract
+  access. That approval is environment-specific and is not an Escrow
   installation step.
 
 ### Files changed
@@ -3606,9 +3603,9 @@ npm run build && npm run typecheck && npm test
 
 rm -rf <the four exact onboarding temporary directories>
 test ! -e <each onboarding temporary directory>
-find /private/tmp -maxdepth 2 <AgentContract temporary-directory patterns>
+find /private/tmp -maxdepth 2 <Escrow temporary-directory patterns>
   PASS; both source copies and both demo directories were removed; no
-  unexpected AgentContract temporary worktree or process directory remained
+  unexpected Escrow temporary worktree or process directory remained
 ```
 
 ### True clean-clone confirmation
@@ -3617,8 +3614,8 @@ After repository history became available, the flow was repeated from an
 actual clone rather than a source copy:
 
 ```text
-git clone --no-local /Users/udaykandi/Desktop/Projects/ProofCatcher \
-  /private/tmp/agentcontract-onboarding-clone.h3yW9E/ProofCatcher
+git clone --no-local /Users/udaykandi/Desktop/Projects/Escrow \
+  /private/tmp/escrow-onboarding-clone.h3yW9E/Escrow
   PASS; cloned HEAD 3b7b25323e103dea0dd4e67a5ed73635380d97d1;
   clean status; no node_modules or dist
 
@@ -3646,9 +3643,9 @@ node dist/index.js fix <cloned-demo> --model gpt-5.6-sol
 
 git status --short
 git worktree list --porcelain
-find /private/tmp -maxdepth 2 <AgentContract temporary-directory patterns>
+find /private/tmp -maxdepth 2 <Escrow temporary-directory patterns>
   PASS; cloned project and demo fixture were clean; only the fixture's active
-  worktree remained; no unexpected AgentContract temporary directory remained
+  worktree remained; no unexpected Escrow temporary directory remained
 
 rm -rf <exact clean-clone and cloned-demo temporary directories>
 test ! -e <each clean-clone temporary directory>
@@ -3659,3 +3656,590 @@ npm run build && npm run typecheck && npm test
   30 files, 402 tests, 402 passed, 4.50s; only IMPLEMENTATION.md is modified;
   the project has one registered worktree
 ```
+
+## Milestone 14 — Local Web Interface
+
+**Status:** COMPLETE
+**Date:** 2026-07-14
+
+### Completed
+
+- Added `escrow ui <repository>` with `--target`, `--port`, `--model`,
+  `--no-open`, `--execute`, `--allow-network`, and `--timeout` parsing.
+- Added a Node built-in HTTP server that binds only to `127.0.0.1`, asks the OS
+  for an available port by default, prints the local URL, opens the system
+  browser by default on macOS/Linux, and closes cleanly on SIGINT or SIGTERM.
+- Added a responsive, dependency-free static browser application with the
+  tagline, read-only repository, target/model/execution controls, truthful
+  stage labels without percentages, seven summary totals, effective
+  instruction chain, expandable claim/evidence cards, required filters,
+  repair preview/apply controls, and JSON/Markdown/HTML downloads.
+- Kept `createRepositoryReport`, `fixRepository`, the report renderers,
+  `applyVerifiedPatch`, command policy, and temporary-worktree code as the
+  shared source of truth. The web server does not invoke the CLI or implement
+  any validator, command policy, report total, or repair policy independently.
+- Centralized the product version in `src/version.ts` for CLI, report, and web
+  config consistency.
+- Added `GET /api/config`, `POST /api/check`, `POST /api/fix/preview`,
+  `POST /api/fix/apply`, and `GET /api/report` for JSON, Markdown, and HTML.
+  The most recent report and one verified repair preview exist only in memory.
+- Restricted operation requests with strict Zod schemas. Browser requests
+  cannot override the supplied repository or submit commands; target paths
+  still pass through canonical Git-root boundary validation. POST requests
+  require JSON and are limited to 16 KiB.
+- Added CSP, framing, MIME-sniffing, referrer, and no-store headers, no CORS
+  opt-in, loopback Host-header enforcement against DNS rebinding, no dynamic
+  repository interpolation into the HTML shell, and DOM rendering through
+  `textContent`.
+- Required the literal `APPLY_VERIFIED_REPAIR` confirmation and matching UUID
+  for the exact previously verified in-memory patch. Successful apply consumes
+  the preview. Existing clean-checkout, exact effective-instruction allowlist,
+  textual patch, no-new-failures, and Git apply checks remain authoritative.
+- Added focused command, asset, server, and integration coverage. Automated
+  Codex behavior is mocked; one existing package-manager fixture is copied to a
+  temporary Git repository for an HTTP adapter end-to-end test.
+- Updated README installation/startup/options/security/judge guidance and its
+  screenshot placeholder, added the interface to SPEC.md, and added Milestone
+  14 to PLAN.md without altering completed milestone history.
+
+### Files created or changed
+
+- `src/version.ts`
+- `src/cli.ts`
+- `src/commands/check.ts`
+- `src/commands/ui.ts`
+- `src/web/assets.ts`
+- `src/web/openBrowser.ts`
+- `src/web/server.ts`
+- `test/unit/cli.test.ts`
+- `test/unit/commands/ui.test.ts`
+- `test/unit/web/assets.test.ts`
+- `test/unit/web/server.test.ts`
+- `test/integration/web/uiWorkflow.test.ts`
+- `vitest.config.ts`
+- `README.md`
+- `SPEC.md`
+- `PLAN.md`
+- `IMPLEMENTATION.md`
+
+No runtime or development dependency was added.
+
+### Commands run
+
+```text
+npm run typecheck
+npx vitest run test/unit/cli.test.ts test/unit/commands/ui.test.ts \
+  test/unit/web/server.test.ts
+npx vitest run test/unit/cli.test.ts test/unit/commands/ui.test.ts \
+  test/unit/web/server.test.ts  # loopback-enabled rerun
+npm run typecheck
+npm run build
+npm run build
+node --input-type=module -e <compile APP_JAVASCRIPT with new Function>
+npx vitest run test/unit/cli.test.ts test/unit/commands/ui.test.ts \
+  test/unit/web test/integration/web
+npm test
+
+mktemp -d /private/tmp/escrow-ui-manual.XXXXXX
+cp -R demo/sample-monorepo <temporary-repository>
+git init --quiet
+git config user.name "Escrow UI Test"
+git config user.email "ui@example.invalid"
+git add .
+git commit --quiet -m "UI manual baseline"
+node dist/index.js ui <temporary-repository> --model gpt-5.6-sol \
+  --port 4173 --no-open
+curl http://127.0.0.1:4173/
+curl http://127.0.0.1:4173/api/config
+curl -X POST -H "Content-Type: application/json" \
+  --data '{"execute":true,"allowNetwork":false,"timeout":120}' \
+  http://127.0.0.1:4173/api/check
+node --input-type=module -e <verify JSON, Markdown, and HTML downloads>
+curl -X POST -H "Content-Type: application/json" \
+  --data '{"execute":true,"allowNetwork":false,"timeout":120}' \
+  http://127.0.0.1:4173/api/fix/preview
+git status --short
+git worktree list --porcelain
+curl -X POST -H "Content-Type: application/json" \
+  --data '{"previewId":"<verified-id>",\
+"confirmation":"APPLY_VERIFIED_REPAIR"}' \
+  http://127.0.0.1:4173/api/fix/apply
+git diff --name-only
+curl -X POST -H "Content-Type: application/json" \
+  --data '{"execute":true,"allowNetwork":false,"timeout":120}' \
+  http://127.0.0.1:4173/api/check
+open http://127.0.0.1:4173
+Ctrl+C
+node --input-type=module -e <verify port 4173 is closed>
+git worktree list --porcelain
+find /private/tmp -maxdepth 2 <Escrow temporary-directory patterns>
+rm -rf <exact temporary manual-acceptance directory>
+
+npm run build
+npm run typecheck
+git diff --check
+node dist/index.js ui --help
+npm test
+```
+
+### Test results
+
+```text
+Initial source type check:
+  npm run typecheck: PASS
+
+First focused run in the managed sandbox:
+  CLI and UI-command tests passed.
+  All 8 real-server tests received expected environment-level EPERM because
+  the sandbox denied loopback binding; no application assertion ran.
+
+Loopback-enabled focused development runs:
+  First run exposed four test-only canonical macOS path/capitalization
+  expectations; production behavior was correct.
+  Final run: PASS; 5 files, 28 tests, 28 passed, 944ms.
+
+Browser asset syntax check:
+  Initial check exposed an escaped-newline bug in the generated JavaScript.
+  Corrected asset rebuilt and compiled successfully with new Function.
+
+First full suite after implementation:
+  npm test: PASS; 34 files, 417 tests, 417 passed, 6.94s.
+
+Manual loopback acceptance using the committed synthetic demo:
+  Server started on exactly 127.0.0.1:4173 and served the SPA and config.
+  Live approved check with command execution: expected 1 passed / 4 failed;
+  safe health command passed in an isolated worktree.
+  JSON, Markdown, and HTML downloads: HTTP 200; parsed/recognized successfully;
+  JSON totals exactly matched the check report.
+  Live repair preview: verified true; changedFiles exactly ["AGENTS.md"];
+  after report 3 passed / 0 failed; active repository remained clean and had
+  only its active worktree.
+  Explicit confirmed apply: applied true; git diff listed only AGENTS.md and
+  matched the previewed diff.
+  Final live recheck: PASS; 4 passed / 0 failed (Codex extracted an additional
+  valid path claim from the health command); isolated command passed.
+  Browser open command succeeded. The managed environment did not permit a
+  screen capture because it could include unrelated desktop content, so visual
+  evidence was not captured; the served DOM, client syntax/controls, and every
+  HTTP interaction were verified directly.
+  Ctrl+C: exit 0; subsequent fetch confirmed the port was closed.
+  Cleanup: only the active fixture worktree remained before fixture removal;
+  no Escrow temporary worktree/process/apply directories remained.
+
+Final verification:
+  npm run build: PASS (exit 0)
+  npm run typecheck: PASS (exit 0)
+  git diff --check: PASS (exit 0)
+  node dist/index.js ui --help: PASS (exit 0), all documented options shown
+  npm test: PASS (exit 0)
+  Test files: 34 passed
+  Tests: 418 passed
+  Duration: 6.62s
+```
+
+### Known limitations
+
+- The local UI supports the same macOS/Linux and JavaScript/TypeScript scope as
+  the CLI; Windows remains outside the MVP.
+- A live scan or repair still requires an installed, authenticated Codex CLI
+  and access to the selected model. Automated tests do not require Codex.
+- Scan stages identify the real pipeline without fake percentages, but the
+  single check response does not stream sub-stage completion events.
+- Session state is intentionally in memory. Restarting the server clears the
+  latest report and verified preview.
+- Browser launch is best-effort on macOS and Linux. `--no-open` always leaves
+  the printed loopback URL available.
+- Network blocking and documented-command transitive behavior retain the
+  existing CLI limitations; the web adapter does not weaken or broaden them.
+
+## Extraction source hydration defect fix
+
+**Status:** COMPLETE
+**Date:** 2026-07-14
+
+### Defect
+
+- Codex claim output was required to copy `originalText` exactly. Even with a
+  valid `sourceFile` and line range, harmless model punctuation or formatting
+  variation caused scans to fail with `Codex did not preserve originalText`.
+- `scopeDirectory` was also copied by the model even though applicability and
+  scope are deterministic repository properties.
+
+### Completed
+
+- Added `RawExtractedClaim` for strict AI output without `originalText` or
+  `scopeDirectory`; retained `ExtractedClaim` as the hydrated internal model
+  consumed by all existing validators and reporters.
+- Updated the shipped JSON Schema, strict Zod response schema, and extraction
+  prompt so Codex returns exact source file and inclusive line references plus
+  normalized claim data, confidence, and extraction reason, but cannot return
+  source evidence or choose scope.
+- Replaced model-text comparison with deterministic hydration from the exact
+  discovered `InstructionFile` matched by `sourceFile`. Exact string equality
+  is required for the source path; there is no path normalization or fuzzy
+  matching at this boundary.
+- Added source-line splitting that recognizes LF and CRLF for line counting,
+  preserves the original separator between selected lines, excludes an
+  unselected trailing separator, and retains list markers, backticks,
+  indentation, and multiline formatting exactly.
+- Preserved the existing positive ordered range validation and added explicit
+  beyond-file rejection before hydration. Files absent from the effective
+  discovered instruction chain remain extraction failures.
+- Left validators, report models, reporters, command execution, repair policy,
+  and all unrelated features unchanged. Existing reports receive the same
+  `ExtractedClaim` shape, now with deterministic source evidence.
+
+### Files changed
+
+- `schemas/claims.schema.json`
+- `src/models/claims.ts`
+- `src/extraction/claimSchema.ts`
+- `src/extraction/extractionPrompt.ts`
+- `src/extraction/extractClaims.ts`
+- `test/unit/extraction/extractClaims.test.ts`
+- `test/unit/extraction/extractionPrompt.test.ts`
+- `test/unit/models/claimSchema.test.ts`
+- `test/integration/repair/repairWorkflow.test.ts`
+- `test/integration/web/uiWorkflow.test.ts`
+- `SPEC.md`
+- `PLAN.md`
+- `IMPLEMENTATION.md`
+
+### Commands run and results
+
+```text
+npm run typecheck
+  PASS
+
+npx vitest run test/unit/extraction/extractClaims.test.ts \
+  test/unit/extraction/extractionPrompt.test.ts \
+  test/unit/models/claimSchema.test.ts
+  PASS; 3 files, 69 tests
+
+npm run build
+  PASS
+
+npm test
+  FINAL PASS; 34 files, 425 tests, 6.63s
+
+node --input-type=module -e <start ephemeral UI server, POST /api/check,
+  print hydrated claim sources, and close server>
+  PASS; bound to 127.0.0.1 on an OS-selected port; HTTP 200
+  Live synthetic demo report: expected fail, 0 passed / 4 failed /
+  1 inconclusive because --execute was not enabled
+  Five extracted claims contained exact AGENTS.md source lines, including
+  Markdown list markers and backticks; no originalText preservation error
+
+git status --short
+git worktree list --porcelain
+find /private/tmp -maxdepth 2 <Escrow temporary-directory patterns>
+  PASS; disposable repository unchanged; only its active worktree remained;
+  no extraction, execution, repair, or UI apply temporary directory remained
+```
+
+### Tests added or updated
+
+- exact single-line reconstruction
+- multiline reconstruction with indentation
+- Markdown backticks and list markers
+- CRLF source reconstruction
+- reversed and beyond-file line ranges
+- exact source-file membership in the instruction chain
+- rejection of model-authored `originalText` and `scopeDirectory`
+- exact hydrated source text in the shared report and console renderer
+- updated mocked extraction payloads for repair and local UI integration
+
+### Known limitations
+
+- Line references remain one-based and inclusive. Codex can still select the
+  wrong valid lines semantically; deterministic hydration guarantees those
+  lines are quoted truthfully but does not use fuzzy matching to reinterpret
+  the selection.
+
+### Two-stage schema correction — 2026-07-14
+
+- Renamed the Codex response boundary to
+  `rawCodexExtractionResponseSchema` and confirmed it contains only
+  `RawExtractedClaimSchema` entries. It does not reference or compose
+  `ExtractedClaimSchema`.
+- Added an explicit second parse inside hydration. After exact source-file
+  lookup, range validation, source reconstruction, and scope derivation, each
+  object must pass `ExtractedClaimSchema`; otherwise extraction fails before
+  validators or reports receive it.
+- Added separate proofs that a raw claim validates without `originalText`,
+  validates without `scopeDirectory`, and fails the final schema. The hydrated
+  version of that claim passes the final schema.
+- Strengthened the mocked-Codex UI integration assertion to require the exact
+  hydrated instruction text and metadata-derived scope in the returned report.
+- Reconfirmed that `schemas/claims.schema.json` contains neither
+  `originalText` nor `scopeDirectory` in any Codex-output branch.
+
+Files changed for this correction:
+
+- `src/extraction/claimSchema.ts`
+- `src/extraction/extractClaims.ts`
+- `test/unit/models/claimSchema.test.ts`
+- `test/unit/extraction/extractClaims.test.ts`
+- `test/integration/web/uiWorkflow.test.ts`
+- `SPEC.md`
+- `PLAN.md`
+- `IMPLEMENTATION.md`
+
+Verification:
+
+```text
+npm run typecheck
+  PASS
+
+npx vitest run test/unit/models/claimSchema.test.ts \
+  test/unit/extraction/extractClaims.test.ts \
+  test/integration/web/uiWorkflow.test.ts
+  PASS; 3 files, 70 tests
+
+npm run build
+  PASS
+
+npm test
+  PASS; 34 files, 428 tests, 6.83s
+```
+
+## Path-extraction intent false-positive fix — 2026-07-14
+
+### Defect
+
+Codex could classify a filename in a policy list as `path_exists`, for example
+the `AGENTS.md` and `AGENTS.override.md` entries beneath “Repair mode may
+modify only.” Those entries constrain which filenames repair may touch; they
+do not assert that every listed file currently exists.
+
+### Completed
+
+- Tightened the extraction prompt to define positive path-existence intent and
+  explicitly exclude allowed/forbidden lists, examples, output destinations,
+  optional files, naming conventions, and repair-mode file allowlists.
+- Added deterministic post-hydration filtering. A `path_exists` claim now
+  requires its exact `referencedPath` in the selected source lines and clear
+  existence intent in those lines or their bounded, contiguous list context.
+- Gave non-existence policy context precedence over incidental verbs. This
+  catches bare filename bullets whose meaning comes from a preceding policy
+  header.
+- Narrowed category detection to policy constructions rather than isolated
+  words, so genuine instructions such as reviewing `docs/examples.md`,
+  reading `docs/output.md`, or seeing `docs/naming-conventions.md` remain path
+  claims.
+- Left path resolution, repository-boundary enforcement, verdicts, validators,
+  reports, execution, repair behavior, and UI behavior unchanged. The UI uses
+  the same extraction pipeline and therefore receives the filtered claims.
+
+### Files changed
+
+- `src/extraction/pathClaimIntent.ts`
+- `src/extraction/extractClaims.ts`
+- `src/extraction/extractionPrompt.ts`
+- `test/unit/extraction/pathClaimIntent.test.ts`
+- `test/unit/extraction/extractClaims.test.ts`
+- `test/unit/extraction/extractionPrompt.test.ts`
+- `SPEC.md`
+- `PLAN.md`
+- `IMPLEMENTATION.md`
+
+### Tests added
+
+- Genuine `Read`, `See`, `Use`, and `Review` path references.
+- Allowed-file and forbidden-file lists.
+- Example paths and sample headings.
+- Output destinations.
+- Optional files and conditional existence language.
+- Filename naming conventions.
+- Repair-mode modifiable-file lists with inherited list-header context.
+- Exact referenced-path occurrence in selected source lines.
+- Regression cases proving category words inside genuine path names are not
+  over-filtered.
+- End-to-end mocked extraction proving policy-list claims are removed while a
+  genuine path claim in the same instruction file remains exact and hydrated.
+
+### Commands run and results
+
+```text
+npm run typecheck
+  PASS
+
+npx vitest run test/unit/extraction/pathClaimIntent.test.ts \
+  test/unit/extraction/extractClaims.test.ts \
+  test/unit/extraction/extractionPrompt.test.ts
+  PASS; 3 files, 59 tests, 736ms
+
+npm run build
+  PASS
+
+npm run typecheck
+  PASS
+
+npm test
+  PASS; 35 files, 447 tests, 6.61s
+```
+
+### Known limitations
+
+- Natural-language classification remains intentionally narrow. Ambiguous
+  filename mentions are discarded rather than converted into repository
+  evidence. Genuine retained path claims still receive the existing strict
+  path validation without relaxed matching or validation rules.
+
+## Final hackathon demo UI polish — 2026-07-14
+
+### Completed work
+
+- Rebranded all user-visible surfaces to **Escrow**. The npm package and binary
+  are `escrow`; browser title/content, CLI help, report headings/download
+  names, errors, README, architecture/demo/submission documentation, license,
+  fixtures, and checked-in sample reports no longer expose the former product
+  names. Internal TypeScript interface names were intentionally left intact.
+- Added `Zod -> zod` to the existing deterministic dependency map. The normal
+  nearest-package resolution now validates Zod guidance in dependencies or
+  devDependencies without AI judgment.
+- Added pure result-filter selection shared by the generated browser code.
+  Attention statuses are the default when present; otherwise passed claims are
+  shown. Advisory totals remain visible, advisory cards are quiet and hidden
+  initially, and explicit Advisory and Show all controls expose them.
+- Added exact clean/failing result messages and stronger visual hierarchy for
+  failed, warning, blocked, and inconclusive claims while keeping passed and
+  advisory cards visually quieter.
+- Added `formatRepositoryDisplayPath`, which uses the existing component-aware
+  repository-boundary check. Console, Markdown, HTML, instruction-chain and
+  browser source locations are repository-relative; outside paths are labeled
+  `[outside repository]` and never masquerade as trusted relative paths.
+  Canonical absolute paths remain unchanged inside validation and JSON.
+- Replaced the three plain report links with accessible Download JSON,
+  Download Markdown, and Download HTML buttons. They retain the existing
+  endpoints, content, totals, attachment headers, keyboard behavior, and
+  visible focus treatment.
+- Added `npm run demo:reset`. The bounded script recreates only the ignored
+  `.escrow-demo/sample-monorepo` directory from the tracked fixture, initializes
+  a fresh local Git repository, and commits the reproducible broken baseline.
+- Completed the tracked demo with four genuine stale instructions, one valid
+  nested override, and one harmless passing command. Added integration tests
+  for the exact failure set, override behavior, command isolation, repaired
+  revalidation, branding, and report-total consistency.
+- Updated the Judge Quick Test and three-minute demo script with exact reset,
+  startup, scan, preview, revalidate, download, apply, and fallback steps.
+
+### Files created or changed for this polish
+
+- Branding and CLI: `package.json`, `package-lock.json`, `src/cli.ts`,
+  `src/commands/ui.ts`, `src/utils/errors.ts`, extraction/repair/execution temp
+  labels, public documents, fixtures, and sample reports.
+- Dependency mapping: `src/validation/dependencyMappings.ts`, dependency
+  fixtures, and `test/unit/validation/dependencyValidator.test.ts`.
+- UI and reports: `src/web/assets.ts`, `src/web/claimFilters.ts`,
+  `src/web/server.ts`, `src/reporting/displayPaths.ts`, console/Markdown/HTML
+  reporters, and focused web/reporting tests.
+- Demo: `scripts/reset-demo.mjs`, `.gitignore`, `demo/README.md`,
+  `demo/sample-monorepo`, `test/integration/demo/demoWorkflow.test.ts`, and
+  `test/integration/demo/demoAssets.test.ts`.
+- Documentation: `README.md`, `SPEC.md`, `PLAN.md`, `IMPLEMENTATION.md`,
+  `docs/architecture.md`, `docs/demo-script.md`, and
+  `docs/devpost-submission.md`.
+
+No React, cloud hosting, authentication, database, GitHub integration,
+telemetry, runtime dependency, validator rewrite, or verdict change was added.
+
+### Automated verification
+
+```text
+npm run typecheck
+  PASS
+
+npm run build
+  PASS
+
+npx vitest run test/unit/validation/dependencyValidator.test.ts \
+  test/unit/reporting test/unit/web/assets.test.ts \
+  test/unit/web/claimFilters.test.ts test/unit/cli.test.ts \
+  test/unit/commands/ui.test.ts test/integration/demo
+  PASS; 13 files, 109 tests, 1.89s
+
+npx vitest run test/unit/web/server.test.ts \
+  test/integration/web/uiWorkflow.test.ts
+  PASS; 2 files, 9 tests, 950ms
+
+npm test -- --reporter=dot
+  PASS; 38 files, 463 tests, 7.23s
+
+git diff --check
+  PASS
+
+rg -n -i 'agentcontract|proofcatcher' \
+  AGENTS.md SPEC.md PLAN.md IMPLEMENTATION.md README.md LICENSE \
+  docs demo package.json package-lock.json
+  PASS; no public-surface matches (rg exit 1)
+
+escrow --help
+  PASS; usage and command descriptions consistently identify Escrow
+```
+
+Coverage includes all four requested Zod cases, default advisory hiding,
+Advisory and Show all filters, component-aware relative/outside paths, report
+download controls, public branding, exact demo failures, nested override
+behavior, repaired validation, and CLI/UI report-total identity.
+
+### Live UI acceptance
+
+Commands run from the Escrow checkout:
+
+```text
+npm link
+npm run demo:reset
+npm run build
+npm run typecheck
+escrow ui .escrow-demo/sample-monorepo --model gpt-5.6-luna \
+  --execute --no-open --port 4177
+POST /api/check
+POST /api/fix/preview
+POST /api/fix/apply with APPLY_VERIFIED_REPAIR
+POST /api/check
+GET /api/report?format=json
+GET /api/report?format=markdown
+GET /api/report?format=html
+Ctrl+C
+npm run demo:reset
+```
+
+Exact results:
+
+```text
+Initial live scan: fail
+  passed 1, failed 4, warnings 0, blocked 0, inconclusive 0,
+  advisory 0, overridden 0
+  failures: package_manager, path_exists, package_script,
+  dependency_present
+  command_runs: passed in an isolated worktree
+
+Repair preview: verified true
+  changedFiles: ["AGENTS.md"]
+  before: 1 passed / 4 failed
+  after: PASS, 3 passed / 0 failed
+  active disposable checkout unchanged during preview
+
+Explicit apply: applied true
+Final live scan: PASS, 3 passed / 0 failed
+Download JSON: HTTP 200, escrow-report.json, 4,613 bytes
+Download Markdown: HTTP 200, escrow-report.md, 2,985 bytes
+Download HTML: HTTP 200, escrow-report.html, 8,500 bytes
+Measured workflow: 66.48 seconds
+```
+
+The active Escrow repository status was identical before and after the live
+workflow. Only the ignored disposable demo's `AGENTS.md` changed on explicit
+apply. Ctrl+C stopped the loopback server; `git worktree list --porcelain`
+showed only the active Escrow checkout; no `escrow-*` temporary directory
+remained. The final reset restored and committed the four-defect demo baseline,
+and its `git status --short` was empty.
+
+### Remaining limitations
+
+- Live extraction and repair require an authenticated Codex CLI and access to
+  the selected model. Automated tests use mocked model output.
+- The UI remains loopback-only and supports the existing macOS/Linux MVP.
+- Repository-relative display is presentation-only; JSON deliberately keeps
+  canonical paths for existing machine consumers.

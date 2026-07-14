@@ -1,6 +1,6 @@
-# AgentContract architecture
+# Escrow architecture
 
-AgentContract separates natural-language interpretation from repository truth.
+Escrow separates natural-language interpretation from repository truth.
 Codex may identify a candidate claim or propose instruction text, but every
 applicability decision, verdict, summary, conflict, safety decision, and patch
 acceptance decision is deterministic.
@@ -24,7 +24,7 @@ deterministic scope and validators
         +---- optional command policy -> temporary Git worktree -> result
         |
         v
-one AgentContractReport
+one EscrowReport
         |
         +---- console
         +---- JSON
@@ -40,7 +40,7 @@ into sibling directories.
 
 Codex receives numbered instruction contents as untrusted data. It runs
 non-interactively in a read-only sandbox, with an output schema and a prompt
-that forbids verdicts. AgentContract validates the JSON again with Zod and
+that forbids verdicts. Escrow validates the JSON again with Zod and
 checks source files, line ranges, exact original text, and scope metadata.
 
 ## Deterministic validation
@@ -94,7 +94,7 @@ after report in repair worktree
 ```
 
 The allowlist is the existing effective instruction chain. All other paths are
-forbidden. AgentContract rejects unsafe paths, untracked additions, staged
+forbidden. Escrow rejects unsafe paths, untracked additions, staged
 changes, symlinks, deletions, renames, mode changes, binary patches, NUL data,
 invalid UTF-8, and any non-regular result. It never edits application code,
 commits, or pushes.

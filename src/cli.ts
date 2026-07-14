@@ -11,11 +11,17 @@ import {
   type FixCommandOptions,
 } from "./commands/fix.js";
 import {
+  uiRepository,
+  type UiCommandHandler,
+  type UiCommandOptions,
+} from "./commands/ui.js";
+import {
   AgentContractError,
   ExitCode,
   getErrorMessage,
   type ExitCode as ExitCodeValue,
 } from "./utils/errors.js";
+import { AGENTCONTRACT_VERSION } from "./version.js";
 
 const PROGRAM_NAME = "escrow";
 const PROGRAM_DESCRIPTION =
@@ -37,9 +43,18 @@ function parseTimeoutSeconds(value: string): number {
   return seconds;
 }
 
+function parsePort(value: string): number {
+  const port = Number(value);
+  if (!Number.isSafeInteger(port) || port < 1 || port > 65_535) {
+    throw new InvalidArgumentError("port must be an integer between 1 and 65535");
+  }
+  return port;
+}
+
 export interface CliDependencies {
   check: CheckCommandHandler;
   fix: FixCommandHandler;
+  ui: UiCommandHandler;
   writeOut: (message: string) => void;
   writeError: (message: string) => void;
 }
@@ -47,6 +62,7 @@ export interface CliDependencies {
 const defaultDependencies: CliDependencies = {
   check: checkRepository,
   fix: fixRepository,
+  ui: uiRepository,
   writeOut: (message: string): void => {
     process.stdout.write(message);
   },
@@ -61,7 +77,7 @@ export function createProgram(dependencies: CliDependencies = defaultDependencie
   program
     .name(PROGRAM_NAME)
     .description(PROGRAM_DESCRIPTION)
-    .version("0.1.0")
+    .version(AGENTCONTRACT_VERSION)
     .exitOverride()
     .configureOutput({
       writeOut: dependencies.writeOut,
@@ -98,6 +114,21 @@ export function createProgram(dependencies: CliDependencies = defaultDependencie
     .option("--keep-worktree", "retain temporary command-execution worktrees")
     .action(async (repository: string, options: FixCommandOptions): Promise<void> => {
       await dependencies.fix(repository, options);
+    });
+
+  program
+    .command("ui")
+    .description("Run the local Escrow browser interface")
+    .argument("<repository>", "path to the repository")
+    .option("--target <directory>", "target directory within the repository")
+    .option("--port <number>", "local TCP port", parsePort)
+    .option("--model <model>", "Codex model used for extraction and repair")
+    .option("--no-open", "do not open the browser automatically")
+    .option("--execute", "execute documented commands in temporary Git worktrees")
+    .option("--allow-network", "allow network-capable documented commands")
+    .option("--timeout <seconds>", "documented-command timeout", parseTimeoutSeconds)
+    .action(async (repository: string, options: UiCommandOptions): Promise<void> => {
+      await dependencies.ui(repository, options);
     });
 
   return program;

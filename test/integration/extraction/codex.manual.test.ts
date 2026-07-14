@@ -9,7 +9,7 @@ import { extractClaims } from "../../../src/extraction/extractClaims.js";
 import type { InstructionFile } from "../../../src/models/instructions.js";
 
 const manualRunEnabled =
-  process.env.AGENTCONTRACT_RUN_CODEX_INTEGRATION === "1";
+  process.env.ESCROW_RUN_CODEX_INTEGRATION === "1";
 const codexInstalled =
   manualRunEnabled &&
   spawnSync("codex", ["--version"], { stdio: "ignore" }).status === 0;

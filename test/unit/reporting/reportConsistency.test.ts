@@ -9,6 +9,10 @@ import {
   SUMMARY_FIELDS,
 } from "../../../src/reporting/reportFormatting.js";
 import { createRichReport } from "./reportFixture.js";
+import {
+  createReport,
+  createValidatedClaim,
+} from "../models/claimFixtures.js";
 
 describe("report format consistency", () => {
   it("renders the same overall status and totals in every format", () => {
@@ -99,6 +103,29 @@ describe("report format consistency", () => {
     );
     expect(htmlOutput).toContain(
       "second &lt;script&gt;stdout&lt;/script&gt; line",
+    );
+  });
+
+  it("uses repository-relative source paths in human-readable reports only", () => {
+    const report = createReport([
+      createValidatedClaim({
+        sourceFile: "/repo/packages/api/AGENTS.md",
+        scopeDirectory: "/repo/packages/api",
+        lineStart: 16,
+        lineEnd: 16,
+      }),
+    ]);
+    const consoleOutput = renderConsoleReport(report);
+    const markdownOutput = renderMarkdownReport(report);
+    const htmlOutput = renderHtmlReport(report);
+    const jsonOutput = JSON.parse(renderJsonReport(report)) as typeof report;
+
+    for (const output of [consoleOutput, markdownOutput, htmlOutput]) {
+      expect(output).toContain("packages/api/AGENTS.md:16");
+      expect(output).not.toContain("/repo/packages/api/AGENTS.md:16");
+    }
+    expect(jsonOutput.claims[0]?.sourceFile).toBe(
+      "/repo/packages/api/AGENTS.md",
     );
   });
 });

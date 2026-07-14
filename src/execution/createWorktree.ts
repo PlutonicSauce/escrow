@@ -27,7 +27,7 @@ export async function createTemporaryWorktree(
   options: CreateWorktreeOptions = {},
 ): Promise<TemporaryWorktree> {
   const runner = options.runner ?? runProcess;
-  const containerDirectory = await mkdtemp(join(tmpdir(), "agentcontract-worktree-"));
+  const containerDirectory = await mkdtemp(join(tmpdir(), "escrow-worktree-"));
   const worktreeDirectory = join(containerDirectory, "checkout");
   const environment = buildIsolatedGitEnvironment(containerDirectory);
 

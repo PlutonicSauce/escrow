@@ -128,7 +128,7 @@ export async function executeCommandInWorktree(
   );
   const canonicalWorktree = await realpath(options.worktree.worktreeDirectory);
   await assertNoExternalSymlinks(canonicalWorktree, canonicalWorktree);
-  const runtimeDirectory = join(options.worktree.worktreeDirectory, ".agentcontract");
+  const runtimeDirectory = join(options.worktree.worktreeDirectory, ".escrow");
   await Promise.all(
     ["home", "tmp", "config", "cache"].map((name) =>
       mkdir(join(runtimeDirectory, name), { recursive: true }),

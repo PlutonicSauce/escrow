@@ -177,8 +177,8 @@ describe("isolated command execution", () => {
         gitDir?: string;
       };
 
-      expect(environment.home).toContain("agentcontract-worktree-");
-      expect(environment.home).toContain(".agentcontract/home");
+      expect(environment.home).toContain("escrow-worktree-");
+      expect(environment.home).toContain(".escrow/home");
       expect(environment.proxy).toBe("http://127.0.0.1:9");
       expect(environment.token).toBeUndefined();
       expect(environment.nodeOptions).toBeUndefined();

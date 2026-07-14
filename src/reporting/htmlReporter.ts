@@ -8,6 +8,7 @@ import {
   formatSourceLocation,
   formatTypeLabel,
 } from "./reportFormatting.js";
+import { formatRepositoryDisplayPath } from "./displayPaths.js";
 
 function escapeHtml(value: string): string {
   return value
@@ -44,7 +45,7 @@ function renderEvidence(claim: ValidatedClaim): string {
     .join("")}</ul>`;
 }
 
-function renderClaim(claim: ValidatedClaim): string {
+function renderClaim(claim: ValidatedClaim, repositoryRoot: string): string {
   const inconsistencies = (claim.repositoryInconsistencies ?? [])
     .map(
       (item) => `<aside class="inconsistency">
@@ -63,8 +64,8 @@ function renderClaim(claim: ValidatedClaim): string {
   return `<article class="claim status-${claim.status}">
 <header><span class="status">${CLAIM_STATUS_LABELS[claim.status]}</span><h3>${escapeHtml(formatTypeLabel(claim.type))}</h3></header>
 <dl>
-<dt>Source</dt><dd><code>${escapeHtml(formatSourceLocation(claim.sourceFile, claim.lineStart, claim.lineEnd))}</code></dd>
-<dt>Scope</dt><dd><code>${escapeHtml(claim.scopeDirectory)}</code></dd>
+<dt>Source</dt><dd><code>${escapeHtml(formatSourceLocation(claim.sourceFile, claim.lineStart, claim.lineEnd, repositoryRoot))}</code></dd>
+<dt>Scope</dt><dd><code>${escapeHtml(formatRepositoryDisplayPath(repositoryRoot, claim.scopeDirectory))}</code></dd>
 </dl>
 <h4>Original instruction</h4>
 <pre><code>${escapeHtml(claim.originalText)}</code></pre>
@@ -76,43 +77,55 @@ ${inconsistencies}${suggestion}${command}
 </article>`;
 }
 
-function renderConflict(conflict: InstructionConflict): string {
+function renderConflict(conflict: InstructionConflict, repositoryRoot: string): string {
   return `<article class="conflict">
 <h3>${escapeHtml(formatTypeLabel(conflict.type))}</h3>
-<p><strong>Effective scope:</strong> <code>${escapeHtml(conflict.effectiveScopeDirectory)}</code></p>
+<p><strong>Effective scope:</strong> <code>${escapeHtml(formatRepositoryDisplayPath(repositoryRoot, conflict.effectiveScopeDirectory))}</code></p>
 <p>${escapeHtml(conflict.message)}</p>
 <ul>${conflict.claims
     .map(
       (claim) =>
-        `<li><code>${escapeHtml(formatSourceLocation(claim.sourceFile, claim.lineStart, claim.lineEnd))}</code>: <code>${escapeHtml(claim.normalizedValue)}</code></li>`,
+        `<li><code>${escapeHtml(formatSourceLocation(claim.sourceFile, claim.lineStart, claim.lineEnd, repositoryRoot))}</code>: <code>${escapeHtml(claim.normalizedValue)}</code></li>`,
     )
     .join("")}</ul>
 </article>`;
 }
 
 export function renderHtmlReport(report: AgentContractReport): string {
+  const attentionStatuses = new Set([
+    "failed",
+    "warning",
+    "blocked",
+    "inconclusive",
+  ]);
+  const defaultFilter = report.claims.some((claim) =>
+    attentionStatuses.has(claim.status),
+  )
+    ? "attention"
+    : "passed";
   const instructionChain =
     report.instructionChain.length === 0
       ? "<p>No instruction files were discovered.</p>"
       : `<ol>${report.instructionChain
           .map(
             (instruction) =>
-              `<li><code>${escapeHtml(instruction.path)}</code> — <code>${escapeHtml(instruction.fileName)}</code> in <code>${escapeHtml(instruction.directory)}</code></li>`,
+              `<li><code>${escapeHtml(formatRepositoryDisplayPath(report.repositoryRoot, instruction.path))}</code> — <code>${escapeHtml(instruction.fileName)}</code> in <code>${escapeHtml(formatRepositoryDisplayPath(report.repositoryRoot, instruction.directory))}</code></li>`,
           )
           .join("")}</ol>`;
   const claims =
     report.claims.length === 0
       ? "<p>No claims were extracted.</p>"
       : `<fieldset class="filters"><legend>Filter claims by status</legend>
-<label><input id="filter-all" type="radio" name="claim-filter" checked> All</label>
+<label><input id="filter-attention" type="radio" name="claim-filter"${defaultFilter === "attention" ? " checked" : ""}> Needs attention</label>
 ${Object.entries(CLAIM_STATUS_LABELS)
   .map(
     ([status, label]) =>
-      `<label><input id="filter-${status}" type="radio" name="claim-filter"> ${escapeHtml(label)}</label>`,
+      `<label><input id="filter-${status}" type="radio" name="claim-filter"${defaultFilter === status ? " checked" : ""}> ${escapeHtml(label)}</label>`,
   )
   .join("\n")}
+<label><input id="filter-all" type="radio" name="claim-filter"> Show all</label>
 </fieldset>
-<div class="claim-list">${report.claims.map(renderClaim).join("\n")}</div>`;
+<div class="claim-list">${report.claims.map((claim) => renderClaim(claim, report.repositoryRoot)).join("\n")}</div>`;
   const overrides = report.claims.filter((claim) => claim.status === "overridden");
   const overrideOutput =
     overrides.length === 0
@@ -120,13 +133,15 @@ ${Object.entries(CLAIM_STATUS_LABELS)
       : `<ul>${overrides
           .map(
             (claim) =>
-              `<li><code>${escapeHtml(formatSourceLocation(claim.sourceFile, claim.lineStart, claim.lineEnd))}</code>: <code>${escapeHtml(claim.normalizedValue)}</code></li>`,
+              `<li><code>${escapeHtml(formatSourceLocation(claim.sourceFile, claim.lineStart, claim.lineEnd, report.repositoryRoot))}</code>: <code>${escapeHtml(claim.normalizedValue)}</code></li>`,
           )
           .join("")}</ul>`;
   const conflicts =
     report.conflicts.length === 0
       ? "<p>No instruction conflicts were detected.</p>"
-      : report.conflicts.map(renderConflict).join("\n");
+      : report.conflicts
+          .map((conflict) => renderConflict(conflict, report.repositoryRoot))
+          .join("\n");
 
   return `<!doctype html>
 <html lang="en">
@@ -136,7 +151,7 @@ ${Object.entries(CLAIM_STATUS_LABELS)
 <title>Escrow Report — ${escapeHtml(OVERALL_STATUS_LABELS[report.overallStatus])}</title>
 <style>
 :root{color-scheme:light dark;font-family:ui-sans-serif,system-ui,-apple-system,sans-serif;line-height:1.5;--ok:#16803a;--bad:#b42318;--warn:#a15c00;--muted:#667085;--border:#98a2b3;--panel:color-mix(in srgb,Canvas 94%,CanvasText 6%)}
-*{box-sizing:border-box}body{margin:0;background:Canvas;color:CanvasText}main{max-width:1080px;margin:auto;padding:2rem 1rem 4rem}h1,h2,h3,h4{line-height:1.2}code,pre{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}code{overflow-wrap:anywhere}pre{padding:1rem;overflow:auto;background:var(--panel);border:1px solid var(--border);border-radius:.5rem;white-space:pre-wrap}.meta,.summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.75rem}.meta div,.summary div,.claim,.conflict{border:1px solid var(--border);border-radius:.65rem;padding:1rem;background:var(--panel)}.meta dt,.summary dt,dt{font-weight:700}.meta dd,.summary dd,dd{margin:0}.overall{font-size:1.25rem;font-weight:800}.overall-fail,.status-failed,.status-blocked{border-left:.4rem solid var(--bad)}.overall-pass{color:var(--ok)}.overall-pass_with_warnings{color:var(--warn)}.claim,.conflict{margin:1rem 0}.claim header{display:flex;gap:.75rem;align-items:center}.claim header h3{margin:.25rem 0}.status{font-weight:800}.status-passed{border-left:.4rem solid var(--ok)}.status-warning,.status-inconclusive{border-left:.4rem solid var(--warn)}.status-advisory,.status-overridden{border-left:.4rem solid var(--muted)}.filters{display:flex;flex-wrap:wrap;gap:.75rem;border:1px solid var(--border);border-radius:.5rem;padding:.75rem}.filters legend{font-weight:700}.filters label{cursor:pointer}.filters:has(#filter-passed:checked)+.claim-list .claim:not(.status-passed),.filters:has(#filter-failed:checked)+.claim-list .claim:not(.status-failed),.filters:has(#filter-warning:checked)+.claim-list .claim:not(.status-warning),.filters:has(#filter-blocked:checked)+.claim-list .claim:not(.status-blocked),.filters:has(#filter-inconclusive:checked)+.claim-list .claim:not(.status-inconclusive),.filters:has(#filter-advisory:checked)+.claim-list .claim:not(.status-advisory),.filters:has(#filter-overridden:checked)+.claim-list .claim:not(.status-overridden){display:none}details{margin-top:1rem;border:1px solid var(--border);border-radius:.5rem;padding:.75rem}summary{cursor:pointer;font-weight:700}.inconsistency,.suggestion{padding:.75rem;border-left:.25rem solid var(--warn)}footer{margin-top:2rem;color:var(--muted)}
+*{box-sizing:border-box}body{margin:0;background:Canvas;color:CanvasText}main{max-width:1080px;margin:auto;padding:2rem 1rem 4rem}h1,h2,h3,h4{line-height:1.2}code,pre{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}code{overflow-wrap:anywhere}pre{padding:1rem;overflow:auto;background:var(--panel);border:1px solid var(--border);border-radius:.5rem;white-space:pre-wrap}.meta,.summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.75rem}.meta div,.summary div,.claim,.conflict{border:1px solid var(--border);border-radius:.65rem;padding:1rem;background:var(--panel)}.meta dt,.summary dt,dt{font-weight:700}.meta dd,.summary dd,dd{margin:0}.overall{font-size:1.25rem;font-weight:800}.overall-fail,.status-failed,.status-blocked{border-left:.4rem solid var(--bad)}.overall-pass{color:var(--ok)}.overall-pass_with_warnings{color:var(--warn)}.claim,.conflict{margin:1rem 0}.claim header{display:flex;gap:.75rem;align-items:center}.claim header h3{margin:.25rem 0}.status{font-weight:800}.status-passed{border-left:.4rem solid var(--ok)}.status-warning,.status-inconclusive{border-left:.4rem solid var(--warn)}.status-advisory,.status-overridden{border-left:.4rem solid var(--muted)}.filters{display:flex;flex-wrap:wrap;gap:.75rem;border:1px solid var(--border);border-radius:.5rem;padding:.75rem}.filters legend{font-weight:700}.filters label{cursor:pointer}.filters:has(#filter-attention:checked)+.claim-list .claim:is(.status-passed,.status-advisory,.status-overridden),.filters:has(#filter-passed:checked)+.claim-list .claim:not(.status-passed),.filters:has(#filter-failed:checked)+.claim-list .claim:not(.status-failed),.filters:has(#filter-warning:checked)+.claim-list .claim:not(.status-warning),.filters:has(#filter-blocked:checked)+.claim-list .claim:not(.status-blocked),.filters:has(#filter-inconclusive:checked)+.claim-list .claim:not(.status-inconclusive),.filters:has(#filter-advisory:checked)+.claim-list .claim:not(.status-advisory),.filters:has(#filter-overridden:checked)+.claim-list .claim:not(.status-overridden){display:none}details{margin-top:1rem;border:1px solid var(--border);border-radius:.5rem;padding:.75rem}summary{cursor:pointer;font-weight:700}.inconsistency,.suggestion{padding:.75rem;border-left:.25rem solid var(--warn)}footer{margin-top:2rem;color:var(--muted)}
 </style>
 </head>
 <body>

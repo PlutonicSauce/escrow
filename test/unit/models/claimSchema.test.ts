@@ -6,6 +6,7 @@ import { describe, expect, it } from "vitest";
 import {
   branchCommandResultSchema,
   extractedClaimSchema,
+  rawExtractedClaimSchema,
   validatedClaimSchema,
 } from "../../../src/extraction/claimSchema.js";
 import {
@@ -14,6 +15,7 @@ import {
   COMMAND_RESULT_STATUSES,
   type ClaimType,
   type ExtractedClaim,
+  type RawExtractedClaim,
 } from "../../../src/models/claims.js";
 import { createExtractedClaim, createValidatedClaim } from "./claimFixtures.js";
 
@@ -84,6 +86,46 @@ describe("claim schemas", () => {
     };
 
     expect(extractedClaimSchema.parse(claim)).toEqual(claim);
+  });
+
+  const rawClaim: RawExtractedClaim = {
+    id: "advisory-raw",
+    type: "advisory",
+    sourceFile: "AGENTS.md",
+    lineStart: 1,
+    lineEnd: 1,
+    normalizedValue: "Prefer small modules",
+    confidence: 0.8,
+    extractionReason: "Advisory instruction",
+  };
+
+  it("validates a raw claim without originalText", () => {
+    expect(rawExtractedClaimSchema.parse(rawClaim)).toEqual(rawClaim);
+    expect(rawClaim).not.toHaveProperty("originalText");
+  });
+
+  it("validates a raw claim without scopeDirectory", () => {
+    expect(rawExtractedClaimSchema.parse(rawClaim)).toEqual(rawClaim);
+    expect(rawClaim).not.toHaveProperty("scopeDirectory");
+  });
+
+  it("never accepts raw model output as a final ExtractedClaim", () => {
+    expect(extractedClaimSchema.safeParse(rawClaim).success).toBe(false);
+  });
+
+  it("rejects model-authored source evidence and scope in raw output", () => {
+    expect(
+      rawExtractedClaimSchema.safeParse({
+        ...rawClaim,
+        originalText: "Model-authored source text",
+      }).success,
+    ).toBe(false);
+    expect(
+      rawExtractedClaimSchema.safeParse({
+        ...rawClaim,
+        scopeDirectory: "/model/chosen/scope",
+      }).success,
+    ).toBe(false);
   });
 
   it.each(COMMAND_RESULT_STATUSES)(

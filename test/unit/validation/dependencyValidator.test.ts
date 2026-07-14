@@ -51,6 +51,7 @@ describe("dependency mappings", () => {
       { displayName: "Vite", dependencyNames: ["vite"] },
       { displayName: "Next.js", dependencyNames: ["next"] },
       { displayName: "React", dependencyNames: ["react"] },
+      { displayName: "Zod", dependencyNames: ["zod"] },
       {
         displayName: "Playwright",
         dependencyNames: ["@playwright/test", "playwright"],
@@ -95,6 +96,7 @@ describe("validateDependencyClaim", () => {
     ["Vite", "vite"],
     ["Next.js", "next"],
     ["React", "react"],
+    ["Zod", "zod"],
     ["Playwright", "@playwright/test"],
   ])("passes the supported %s mapping", async (frameworkOrTool, dependencyName) => {
     const result = await validateDependencyClaim(
@@ -172,6 +174,53 @@ describe("validateDependencyClaim", () => {
     expect(result.evidence).toHaveLength(3);
     expect(result.evidence[2]).toContain('dependency "jest"');
     expect(result.evidence[2]).toContain("is absent");
+  });
+
+  it("passes when Zod is installed", async () => {
+    const result = await validateDependencyClaim(
+      createDependencyClaim("Zod", ["zod"], {
+        originalText: "Validate external and AI-generated data with Zod.",
+      }),
+      { repositoryRoot: fixture("all-mappings") },
+    );
+
+    expect(result.status).toBe("passed");
+    expect(result.evidence[2]).toContain('Dependency "zod"');
+  });
+
+  it("fails when Zod is missing", async () => {
+    const result = await validateDependencyClaim(
+      createDependencyClaim("Zod", ["zod"]),
+      { repositoryRoot: fixture("missing") },
+    );
+
+    expect(result.status).toBe("failed");
+    expect(result.evidence[2]).toContain('dependency "zod"');
+    expect(result.evidence[2]).toContain("is absent");
+  });
+
+  it("detects Zod in devDependencies", async () => {
+    const result = await validateDependencyClaim(
+      createDependencyClaim("Zod", ["zod"]),
+      { repositoryRoot: fixture("all-mappings") },
+    );
+
+    expect(result.status).toBe("passed");
+    expect(result.evidence[2]).toContain("declared in devDependencies");
+  });
+
+  it("uses nested package scope for Zod", async () => {
+    const result = await validateDependencyClaim(
+      createDependencyClaim("Zod", ["zod"], {
+        sourceFile: "packages/api/AGENTS.md",
+        scopeDirectory: "packages/api",
+      }),
+      { repositoryRoot: fixture("nested") },
+    );
+
+    expect(result.status).toBe("passed");
+    expect(result.evidence[1]).toContain("packages/api/package.json");
+    expect(result.evidence[2]).toContain('Dependency "zod"');
   });
 
   it("returns inconclusive for an unknown framework without inspecting a repository", async () => {

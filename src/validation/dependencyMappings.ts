@@ -12,6 +12,7 @@ export const DEPENDENCY_MAPPINGS = [
   { displayName: "Vite", dependencyNames: ["vite"] },
   { displayName: "Next.js", dependencyNames: ["next"] },
   { displayName: "React", dependencyNames: ["react"] },
+  { displayName: "Zod", dependencyNames: ["zod"] },
   {
     displayName: "Playwright",
     dependencyNames: ["@playwright/test", "playwright"],

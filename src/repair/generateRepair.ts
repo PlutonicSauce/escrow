@@ -59,7 +59,7 @@ export async function generateRepair(
   let repairWorkingDirectory: string;
   try {
     repairWorkingDirectory = await mkdtemp(
-      join(tmpdir(), "agentcontract-repair-"),
+      join(tmpdir(), "escrow-repair-"),
     );
   } catch (error: unknown) {
     throw new CodexRepairError(

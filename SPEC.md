@@ -1,8 +1,8 @@
-# AgentContract Product Specification
+# Escrow Product Specification
 
 ## 1. Product summary
 
-AgentContract is an executable verification tool for repository instructions
+Escrow is an executable verification tool for repository instructions
 used by coding agents.
 
 Coding agents rely on files such as `AGENTS.md` and `AGENTS.override.md`.
@@ -10,7 +10,7 @@ Those files may contain setup commands, test commands, package-manager rules,
 framework claims, and referenced documentation. As repositories evolve, those
 instructions can become stale.
 
-AgentContract converts verifiable instructions into structured claims,
+Escrow converts verifiable instructions into structured claims,
 validates them against the repository, optionally executes documented commands
 inside an isolated Git worktree, and generates evidence reports.
 
@@ -52,6 +52,7 @@ The MVP supports:
 - Codex-assisted claim extraction
 - Codex-assisted repair suggestions
 - console, JSON, Markdown, and static HTML reports
+- a loopback-only local browser interface
 
 ## 7. Supported claim types
 
@@ -142,20 +143,20 @@ FAIL  Referenced path
 Binary:
 
 ```bash
-agentcontract
+escrow
 ```
 
 Commands:
 
 ```bash
-agentcontract check .
-agentcontract check . --target packages/api
-agentcontract check . --execute
-agentcontract check . --json report.json
-agentcontract check . --markdown report.md
-agentcontract check . --html report.html
-agentcontract fix .
-agentcontract fix . --apply
+escrow check .
+escrow check . --target packages/api
+escrow check . --execute
+escrow check . --json report.json
+escrow check . --markdown report.md
+escrow check . --html report.html
+escrow fix .
+escrow fix . --apply
 ```
 
 Supported flags:
@@ -184,7 +185,7 @@ gpt-5.6
 Environment override:
 
 ```text
-AGENTCONTRACT_CODEX_MODEL
+ESCROW_CODEX_MODEL
 ```
 
 ## 11. Instruction discovery
@@ -214,7 +215,7 @@ Do not expose unrelated home-directory content.
 ## 12. Claim model
 
 ```ts
-interface ExtractedClaim {
+interface RawExtractedClaim {
   id: string;
   type: ClaimType;
 
@@ -222,9 +223,7 @@ interface ExtractedClaim {
   lineStart: number;
   lineEnd: number;
 
-  originalText: string;
   normalizedValue: string;
-  scopeDirectory: string;
 
   command?: string;
   referencedPath?: string;
@@ -234,6 +233,11 @@ interface ExtractedClaim {
 
   confidence: number;
   extractionReason: string;
+}
+
+interface ExtractedClaim extends RawExtractedClaim {
+  originalText: string;
+  scopeDirectory: string;
 }
 ```
 
@@ -252,6 +256,29 @@ Codex may:
 Codex must not assign validation statuses.
 
 External and AI-generated data must be validated with Zod.
+
+Codex returns `RawExtractedClaim` values and must not return `originalText` or
+choose `scopeDirectory`. After strict schema validation, deterministic code
+requires an exact `sourceFile` match in the discovered instruction chain,
+validates the inclusive line range, hydrates scope from the matched instruction
+record, and reconstructs `originalText` from the exact selected source lines.
+Every hydrated result is then validated with the final `ExtractedClaim` Zod
+schema before deterministic validation begins. Raw model output is never parsed
+as, cast to, or accepted as a final `ExtractedClaim`. No fuzzy source matching
+or AI-authored source evidence is allowed. LF and CRLF are treated equivalently
+for line counting while the original separators, Markdown markers, indentation,
+and multiline formatting are preserved in the hydrated text.
+
+`path_exists` is limited to language that clearly requires or assumes a
+current repository path, including direct instructions to read, see, use,
+review, open, or inspect it. Filename mentions in allowed/forbidden policy
+lists, examples, output destinations, optional-file guidance, naming
+conventions, and repair-mode file allowlists are not existence claims. After
+hydration, deterministic intent filtering applies these exclusions using the
+exact selected source text and its local list context; exclusions take
+precedence over incidental action verbs. The referenced path must occur
+exactly in the selected source lines. Genuine path claims continue through the
+existing repository-bounded path validator unchanged.
 
 ## 14. Deterministic validation
 
@@ -339,6 +366,7 @@ Vite        -> vite
 Next.js     -> next
 React       -> react
 Playwright  -> @playwright/test or playwright
+Zod         -> zod
 ```
 
 Statuses:
@@ -480,7 +508,7 @@ Repair process:
 2. provide failed claims and deterministic evidence to Codex
 3. request the smallest truthful documentation patch
 4. reject changes outside allowed files
-5. rerun AgentContract
+5. rerun Escrow
 6. reject repairs introducing new failures
 7. show before-and-after evidence
 8. show the diff
@@ -533,7 +561,7 @@ interface ValidatedClaim extends ExtractedClaim {
   commandResult?: BranchCommandResult;
 }
 
-interface AgentContractReport {
+interface EscrowReport {
   version: string;
   generatedAt: string;
   repositoryRoot: string;
@@ -574,7 +602,7 @@ Avoid unnecessary dependencies.
 ## 22. Project structure
 
 ```text
-agentcontract/
+escrow/
 ├── AGENTS.md
 ├── SPEC.md
 ├── PLAN.md
@@ -613,7 +641,7 @@ agentcontract/
 1  one or more claims failed
 2  invalid arguments or repository
 3  Codex extraction failed
-4  internal AgentContract error
+4  internal Escrow error
 ```
 
 Warnings, blocked checks, and inconclusive results do not return `1` in the MVP.
@@ -660,3 +688,56 @@ The MVP is complete when:
 10. tests pass
 11. the demo runs in under three minutes
 12. README setup instructions work on a clean machine
+13. the local web interface reuses the shared report and repair services,
+    remains loopback-only, and requires explicit confirmation before applying
+    a verified repair
+
+## 26. Local Web Interface
+
+Escrow includes a local-only browser adapter started with:
+
+```bash
+escrow ui <repository>
+```
+
+The command accepts `--target`, `--port`, `--model`, `--no-open`, `--execute`,
+`--allow-network`, and `--timeout`. It binds only to `127.0.0.1`, selects an
+available port when none is supplied, and opens the browser unless
+`--no-open` is set.
+
+The interface must remain a thin adapter over the same repository evaluation,
+report rendering, isolated command execution, and restricted repair workflows
+used by the CLI. It must not accept a browser-supplied repository or arbitrary
+command. It may keep the latest report and one verified repair preview in
+memory for the current process; it must not add persistence.
+
+The local API exposes configuration, check, repair preview, confirmed apply,
+and JSON/Markdown/HTML report download operations. POST bodies are JSON and
+size-limited. Repository content is rendered through text-safe DOM operations
+or the existing escaped report renderer. CORS is not enabled, and non-loopback
+Host headers are rejected.
+
+Repair preview leaves the active checkout unchanged. Apply accepts only the
+exact previously verified in-memory patch and an explicit confirmation value;
+the existing instruction-file allowlist, clean-checkout requirement,
+revalidation, and patch safety checks remain authoritative.
+
+The browser presents the effective instruction chain, stage labels without
+fake percentages, shared summary totals, expandable claims and evidence,
+status filters, an instruction-only repair diff, before/after totals, and
+downloads generated from the most recent shared `EscrowReport`.
+
+Human-readable source references are repository-relative after a component-
+aware repository-boundary check; internal validation retains absolute paths.
+Outside paths must be labeled rather than rendered as trusted relative paths.
+After a scan, failed, warning, blocked, and inconclusive claims are shown by
+default. If none exist, passed claims are shown. Advisory totals remain visible
+while advisory cards require the explicit Advisory or Show all control.
+Download controls are labeled Download JSON, Download Markdown, and Download
+HTML and use the existing shared report endpoints.
+
+The final UI demo uses a disposable committed copy of
+`demo/sample-monorepo`, never the Escrow checkout itself. A bounded reset
+command restores its four stale instructions between runs. Repair preview
+revalidates only in an isolated worktree and leaves the disposable active
+checkout unchanged until explicit confirmed apply.

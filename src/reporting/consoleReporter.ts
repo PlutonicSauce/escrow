@@ -5,6 +5,7 @@ import {
   formatSourceLocation,
   formatTypeLabel,
 } from "./reportFormatting.js";
+import { formatRepositoryDisplayPath } from "./displayPaths.js";
 
 export function renderConsoleReport(report: AgentContractReport): string {
   const lines = [
@@ -19,14 +20,16 @@ export function renderConsoleReport(report: AgentContractReport): string {
     lines.push("  None");
   } else {
     for (const instruction of report.instructionChain) {
-      lines.push(`  ${instruction.path} (${instruction.fileName})`);
+      lines.push(
+        `  ${formatRepositoryDisplayPath(report.repositoryRoot, instruction.path)} (${instruction.fileName})`,
+      );
     }
   }
 
   for (const claim of report.claims) {
     lines.push("");
     lines.push(
-      `[${CLAIM_STATUS_LABELS[claim.status]}] ${claim.type} ${formatSourceLocation(claim.sourceFile, claim.lineStart, claim.lineEnd)}`,
+      `[${CLAIM_STATUS_LABELS[claim.status]}] ${claim.type} ${formatSourceLocation(claim.sourceFile, claim.lineStart, claim.lineEnd, report.repositoryRoot)}`,
     );
     lines.push(`  ${claim.originalText}`);
     lines.push(`  Normalized: ${claim.normalizedValue}`);
@@ -66,12 +69,12 @@ export function renderConsoleReport(report: AgentContractReport): string {
   for (const conflict of report.conflicts) {
     lines.push("");
     lines.push(
-      `[CONFLICT] ${formatTypeLabel(conflict.type)} in ${conflict.effectiveScopeDirectory}`,
+      `[CONFLICT] ${formatTypeLabel(conflict.type)} in ${formatRepositoryDisplayPath(report.repositoryRoot, conflict.effectiveScopeDirectory)}`,
     );
     lines.push(`  ${conflict.message}`);
     for (const claim of conflict.claims) {
       lines.push(
-        `  Source: ${formatSourceLocation(claim.sourceFile, claim.lineStart, claim.lineEnd)} (${claim.normalizedValue})`,
+        `  Source: ${formatSourceLocation(claim.sourceFile, claim.lineStart, claim.lineEnd, report.repositoryRoot)} (${claim.normalizedValue})`,
       );
     }
   }

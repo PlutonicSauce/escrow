@@ -2,7 +2,6 @@ import type { InstructionFile } from "../models/instructions.js";
 
 interface PromptInstructionFile {
   sourceFile: string;
-  scopeDirectory: string;
   numberedContent: string;
 }
 
@@ -17,7 +16,6 @@ function numberLines(content: string): string {
 function toPromptFile(instruction: InstructionFile): PromptInstructionFile {
   return {
     sourceFile: instruction.path,
-    scopeDirectory: instruction.directory,
     numberedContent: numberLines(instruction.content),
   };
 }
@@ -42,14 +40,21 @@ the supplied output schema. Use only these claim types:
 - command_runs
 - advisory
 
-For every claim, copy sourceFile and scopeDirectory exactly from the supplied
-file metadata. Use inclusive, one-based lineStart and lineEnd values. Copy the
-complete selected source lines exactly into originalText without removing
-Markdown markers. Provide a concise normalizedValue, confidence from 0 to 1,
-and extractionReason. Use a stable, non-empty id.
+For every claim, copy sourceFile exactly from the supplied file metadata and
+use inclusive, one-based lineStart and lineEnd values. Do not return
+originalText or scopeDirectory; deterministic code hydrates both from the
+matched instruction file after validating the source range. Provide a concise
+normalizedValue, confidence from 0 to 1, and extractionReason. Use a stable,
+non-empty id.
 
 Type-specific fields:
-- path_exists: include referencedPath.
+- path_exists: include referencedPath only when the instruction clearly
+  requires or assumes that a current repository path exists, such as directing
+  the agent to read, see, use, review, open, or inspect it. Do not extract
+  path_exists from allowed-file lists, forbidden-file lists, examples, output
+  destinations, optional files, filename patterns or naming conventions, or
+  statements about which files repair mode may modify. A filename mention by
+  itself does not assert existence.
 - package_manager: include packageManager as npm, pnpm, or yarn.
 - package_script: include packageScript; include command and packageManager only
   when the instruction explicitly supplies them.

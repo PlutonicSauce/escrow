@@ -62,73 +62,108 @@ npm link
 escrow --help
 ```
 
-No OpenAI SDK or application API key is read directly by AgentContract. Codex
+No OpenAI SDK or application API key is read directly by Escrow. Codex
 CLI owns authentication. The CLI may use a saved ChatGPT login or an API-key
 login, subject to the account and workspace configuration.
 
 ## Judge Quick Test
 
-Supported on macOS or Linux. From the AgentContract checkout, use Node.js 20+,
+Supported on macOS or Linux. From the Escrow checkout, use Node.js 20+,
 Git, npm, and an installed/authenticated Codex CLI. The model must be available
-to the authenticated account; override `AGENTCONTRACT_DEMO_MODEL` when needed.
+to the authenticated account; override `ESCROW_DEMO_MODEL` when needed.
 
-Copy and run this block. It creates a committed temporary copy, so the bundled
-demo and AgentContract checkout remain unchanged:
+Copy and run this block. The reset command creates a committed, ignored demo
+repository under `.escrow-demo/`, so the tracked fixture and Escrow checkout
+remain unchanged:
 
 ```bash
 codex --version
 codex login status
 npm ci
 npm run build
-
-DEMO_HOME="$(mktemp -d)"
-DEMO_REPO="$DEMO_HOME/sample-monorepo"
-HTML_REPORT="$DEMO_HOME/agentcontract-report.html"
-MODEL="${AGENTCONTRACT_DEMO_MODEL:-gpt-5.6-sol}"
-
-cp -R demo/sample-monorepo "$DEMO_REPO"
-git -C "$DEMO_REPO" init --quiet
-git -C "$DEMO_REPO" config user.name "AgentContract Judge"
-git -C "$DEMO_REPO" config user.email "judge@example.invalid"
-git -C "$DEMO_REPO" add .
-git -C "$DEMO_REPO" commit --quiet -m "judge demo baseline"
-
-node dist/index.js check "$DEMO_REPO" --execute --model "$MODEL" \
-  --html "$HTML_REPORT"
-CHECK_EXIT=$?
-test "$CHECK_EXIT" -eq 1
-
-printf 'Open this static report in a browser: %s\n' "$HTML_REPORT"
-test -s "$HTML_REPORT"
-
-node dist/index.js fix "$DEMO_REPO" --model "$MODEL"
-git -C "$DEMO_REPO" status --short
-
-node dist/index.js fix "$DEMO_REPO" --apply --model "$MODEL"
-git -C "$DEMO_REPO" diff --name-only
-sed -n '1,8p' "$DEMO_REPO/AGENTS.md"
-node dist/index.js check "$DEMO_REPO" --execute --model "$MODEL"
+npm link
+npm run demo:reset
+escrow ui .escrow-demo/sample-monorepo \
+  --model "${ESCROW_DEMO_MODEL:-gpt-5.6-luna}" --execute
 ```
 
 Expected output:
 
-- The first check prints `AgentContract: FAIL`, with `1 passed, 4 failed`, and
-  exits `1`. The failures cover package manager, deleted path, missing script,
-  and absent Jest; the health command passes in an isolated worktree.
-- `$HTML_REPORT` is a non-empty, self-contained report with the same totals,
-  source locations, evidence, and expandable command output.
-- Preview prints `=== Verified instruction diff ===` and an after-report with
-  zero failures and one unexecuted command; the passed count can include
-  additional valid claims. The following `git status --short` prints nothing
-  because preview does not change the active fixture.
-- Verified apply prints only `AGENTS.md` from `git diff --name-only`. The file
-  now says pnpm and `pnpm test:unit`; the final check prints
-  `AgentContract: PASS` with at least `3 passed, 0 failed`.
+- The terminal prints a loopback `http://127.0.0.1:<port>` URL.
+- **Scan instructions** shows exactly four failures: package manager, deleted
+  path, missing script, and outdated Jest guidance. The safe health command
+  passes in an isolated worktree.
+- Claim and instruction locations are repository-relative. Advisory cards are
+  hidden initially but remain available through **Advisory** or **Show all**.
+- **Download JSON**, **Download Markdown**, and **Download HTML** use the same
+  report and totals.
+- **Preview instruction repair** shows an `AGENTS.md`-only diff. Preview leaves
+  `.escrow-demo/sample-monorepo` clean. **Revalidate** displays
+  `No broken instructions were found.` from the verified repair worktree.
+- An explicit confirmed apply may change only the disposable demo's
+  `AGENTS.md`. Run `npm run demo:reset` to restore the broken state.
 
 Codex output can vary. If preview or apply rejects malformed output, confirm
 `git status --short` is empty and rerun that same command, or set
-`AGENTCONTRACT_DEMO_MODEL` to an available GPT-5.6 variant. AgentContract
+`ESCROW_DEMO_MODEL` to an available GPT-5.6 variant. Escrow
 rejects an invalid proposal without changing the fixture.
+
+## Local Web Interface
+
+After installing and building the project, start the local browser interface
+for any local Git repository:
+
+```bash
+npm ci
+npm run build
+node dist/index.js ui /path/to/repository
+```
+
+The server selects an available port, binds only to `127.0.0.1`, prints its
+URL, and opens the default browser. Use `--no-open` when you want to open the
+printed URL yourself.
+
+```bash
+escrow ui .
+escrow ui . --target packages/api
+escrow ui . --port 4173 --no-open
+escrow ui . --model gpt-5.6-luna
+escrow ui . --execute --timeout 120
+escrow ui . --execute --allow-network
+```
+
+Supported UI options are `--target`, `--port`, `--model`, `--no-open`,
+`--execute`, `--allow-network`, and `--timeout`. Documented commands remain
+disabled unless `--execute` is explicit. The advanced network toggle remains
+off unless `--allow-network` is explicit.
+
+The browser is a thin adapter over the same discovery, extraction,
+deterministic validation, report, command-isolation, and repair-verification
+services used by the CLI. It cannot choose another repository or supply a
+shell command. Requests are same-origin JSON with a 16 KiB body limit; the
+server does not enable CORS, telemetry, persistence, authentication, or remote
+binding, and it rejects non-loopback Host headers. Repair preview runs in the
+existing temporary Git worktree and leaves
+the active checkout unchanged. Applying requires a currently verified preview
+and an explicit confirmation in the page, and can still change only effective
+`AGENTS.md` or `AGENTS.override.md` files.
+
+### UI judge quick test
+
+Reset the disposable demo and start the UI:
+
+```bash
+npm run demo:reset
+escrow ui .escrow-demo/sample-monorepo --model gpt-5.6-luna --execute
+```
+
+Open the printed `http://127.0.0.1:<port>` URL. Click **Scan instructions** and
+expect 1 passed and 4 failed claims. Expand a claim to inspect deterministic
+evidence, filter the ledger, download the JSON/Markdown/HTML reports, and click
+**Preview instruction repair**. The preview displays an instruction-only diff
+without changing the demo checkout. Click **Revalidate** to show the verified
+PASS result, or explicitly confirm and apply the exact verified patch to the
+disposable demo. Press Ctrl+C in the terminal to shut down the server.
 
 ## Check a repository
 
@@ -144,7 +179,7 @@ escrow check . --html report.html
 If npm linking was skipped, replace `escrow` with
 `node /path/to/escrow/dist/index.js`.
 
-Report formats all consume the same `AgentContractReport` object:
+Report formats all consume the same shared report object:
 
 - console for immediate feedback
 - JSON for automation
@@ -164,11 +199,11 @@ escrow fix . --apply    # apply only the verified instruction patch
 ```
 
 Repair mode requires a clean active repository. Codex proposes a
-schema-constrained unified diff from a read-only sandbox. AgentContract applies
+schema-constrained unified diff from a read-only sandbox. Escrow applies
 it first in a detached temporary worktree, rejects every change outside the
 effective `AGENTS.md`/`AGENTS.override.md` allowlist, reruns validation, and
 rejects repairs that introduce failures. `--apply` is required before active
-instruction files can change. AgentContract never commits or pushes.
+instruction files can change. Escrow never commits or pushes.
 
 ## Where Codex and GPT-5.6 are used
 
@@ -179,10 +214,16 @@ Codex is used only at two natural-language boundaries:
 2. Repair proposal: GPT-5.6 proposes the smallest documentation-only unified
    diff from failed claims and deterministic evidence.
 
+<<<<<<< HEAD
 Override the model with `--model <model>` or `ESCROW_CODEX_MODEL`
 (`AGENTCONTRACT_CODEX_MODEL` remains supported for compatibility).
 Model availability depends on the authenticated account. The demo script uses
 `gpt-5.6-terra` by default and accepts `ESCROW_DEMO_MODEL` when another
+=======
+Override the model with `--model <model>` or `ESCROW_CODEX_MODEL`.
+Model availability depends on the authenticated account. The demo script uses
+`gpt-5.6-luna` by default and accepts `ESCROW_DEMO_MODEL` when another
+>>>>>>> 0453a20 (Add interactive local Escrow interface)
 available GPT-5.6 variant is required.
 Codex never assigns pass/fail/warning/blocked/inconclusive/overridden verdicts,
 never determines instruction applicability, and never applies a repair.
@@ -229,7 +270,7 @@ and all report formats:
   the MVP.
 - JavaScript/TypeScript package evidence only, with npm, pnpm, and Yarn.
 - Dependency recognition is intentionally limited to Vitest, Jest, TypeScript,
-  ESLint, Prettier, Vite, Next.js, React, and Playwright.
+  ESLint, Prettier, Vite, Next.js, React, Playwright, and Zod.
 - Global instruction discovery and the documented `--include-global` flag are
   not implemented in the current MVP.
 - The documented `--verbose` flag is not implemented; normal CLI errors still
@@ -258,7 +299,7 @@ npm run build
 Optional live Codex extraction test:
 
 ```bash
-AGENTCONTRACT_RUN_CODEX_INTEGRATION=1 npm run test:codex-integration
+ESCROW_RUN_CODEX_INTEGRATION=1 npm run test:codex-integration
 ```
 
 Tests use Vitest and harmless temporary fixture repositories. Unsafe command

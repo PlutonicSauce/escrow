@@ -6,7 +6,7 @@
 <title>Escrow Report — FAIL</title>
 <style>
 :root{color-scheme:light dark;font-family:ui-sans-serif,system-ui,-apple-system,sans-serif;line-height:1.5;--ok:#16803a;--bad:#b42318;--warn:#a15c00;--muted:#667085;--border:#98a2b3;--panel:color-mix(in srgb,Canvas 94%,CanvasText 6%)}
-*{box-sizing:border-box}body{margin:0;background:Canvas;color:CanvasText}main{max-width:1080px;margin:auto;padding:2rem 1rem 4rem}h1,h2,h3,h4{line-height:1.2}code,pre{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}code{overflow-wrap:anywhere}pre{padding:1rem;overflow:auto;background:var(--panel);border:1px solid var(--border);border-radius:.5rem;white-space:pre-wrap}.meta,.summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.75rem}.meta div,.summary div,.claim,.conflict{border:1px solid var(--border);border-radius:.65rem;padding:1rem;background:var(--panel)}.meta dt,.summary dt,dt{font-weight:700}.meta dd,.summary dd,dd{margin:0}.overall{font-size:1.25rem;font-weight:800}.overall-fail,.status-failed,.status-blocked{border-left:.4rem solid var(--bad)}.overall-pass{color:var(--ok)}.overall-pass_with_warnings{color:var(--warn)}.claim,.conflict{margin:1rem 0}.claim header{display:flex;gap:.75rem;align-items:center}.claim header h3{margin:.25rem 0}.status{font-weight:800}.status-passed{border-left:.4rem solid var(--ok)}.status-warning,.status-inconclusive{border-left:.4rem solid var(--warn)}.status-advisory,.status-overridden{border-left:.4rem solid var(--muted)}.filters{display:flex;flex-wrap:wrap;gap:.75rem;border:1px solid var(--border);border-radius:.5rem;padding:.75rem}.filters legend{font-weight:700}.filters label{cursor:pointer}.filters:has(#filter-passed:checked)+.claim-list .claim:not(.status-passed),.filters:has(#filter-failed:checked)+.claim-list .claim:not(.status-failed),.filters:has(#filter-warning:checked)+.claim-list .claim:not(.status-warning),.filters:has(#filter-blocked:checked)+.claim-list .claim:not(.status-blocked),.filters:has(#filter-inconclusive:checked)+.claim-list .claim:not(.status-inconclusive),.filters:has(#filter-advisory:checked)+.claim-list .claim:not(.status-advisory),.filters:has(#filter-overridden:checked)+.claim-list .claim:not(.status-overridden){display:none}details{margin-top:1rem;border:1px solid var(--border);border-radius:.5rem;padding:.75rem}summary{cursor:pointer;font-weight:700}.inconsistency,.suggestion{padding:.75rem;border-left:.25rem solid var(--warn)}footer{margin-top:2rem;color:var(--muted)}
+*{box-sizing:border-box}body{margin:0;background:Canvas;color:CanvasText}main{max-width:1080px;margin:auto;padding:2rem 1rem 4rem}h1,h2,h3,h4{line-height:1.2}code,pre{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}code{overflow-wrap:anywhere}pre{padding:1rem;overflow:auto;background:var(--panel);border:1px solid var(--border);border-radius:.5rem;white-space:pre-wrap}.meta,.summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.75rem}.meta div,.summary div,.claim,.conflict{border:1px solid var(--border);border-radius:.65rem;padding:1rem;background:var(--panel)}.meta dt,.summary dt,dt{font-weight:700}.meta dd,.summary dd,dd{margin:0}.overall{font-size:1.25rem;font-weight:800}.overall-fail,.status-failed,.status-blocked{border-left:.4rem solid var(--bad)}.overall-pass{color:var(--ok)}.overall-pass_with_warnings{color:var(--warn)}.claim,.conflict{margin:1rem 0}.claim header{display:flex;gap:.75rem;align-items:center}.claim header h3{margin:.25rem 0}.status{font-weight:800}.status-passed{border-left:.4rem solid var(--ok)}.status-warning,.status-inconclusive{border-left:.4rem solid var(--warn)}.status-advisory,.status-overridden{border-left:.4rem solid var(--muted)}.filters{display:flex;flex-wrap:wrap;gap:.75rem;border:1px solid var(--border);border-radius:.5rem;padding:.75rem}.filters legend{font-weight:700}.filters label{cursor:pointer}.filters:has(#filter-attention:checked)+.claim-list .claim:is(.status-passed,.status-advisory,.status-overridden),.filters:has(#filter-passed:checked)+.claim-list .claim:not(.status-passed),.filters:has(#filter-failed:checked)+.claim-list .claim:not(.status-failed),.filters:has(#filter-warning:checked)+.claim-list .claim:not(.status-warning),.filters:has(#filter-blocked:checked)+.claim-list .claim:not(.status-blocked),.filters:has(#filter-inconclusive:checked)+.claim-list .claim:not(.status-inconclusive),.filters:has(#filter-advisory:checked)+.claim-list .claim:not(.status-advisory),.filters:has(#filter-overridden:checked)+.claim-list .claim:not(.status-overridden){display:none}details{margin-top:1rem;border:1px solid var(--border);border-radius:.5rem;padding:.75rem}summary{cursor:pointer;font-weight:700}.inconsistency,.suggestion{padding:.75rem;border-left:.25rem solid var(--warn)}footer{margin-top:2rem;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -30,9 +30,9 @@
 <div data-summary-key="advisory" data-summary-value="0"><dt>Advisory</dt><dd>0</dd></div>
 <div data-summary-key="overridden" data-summary-value="0"><dt>Overridden</dt><dd>0</dd></div>
 </dl></section>
-<section aria-labelledby="instructions"><h2 id="instructions">Instruction chain</h2><ol><li><code>/demo/sample-monorepo/AGENTS.md</code> — <code>AGENTS.md</code> in <code>/demo/sample-monorepo</code></li></ol></section>
+<section aria-labelledby="instructions"><h2 id="instructions">Instruction chain</h2><ol><li><code>AGENTS.md</code> — <code>AGENTS.md</code> in <code>.</code></li></ol></section>
 <section aria-labelledby="claims"><h2 id="claims">Claims</h2><fieldset class="filters"><legend>Filter claims by status</legend>
-<label><input id="filter-all" type="radio" name="claim-filter" checked> All</label>
+<label><input id="filter-attention" type="radio" name="claim-filter" checked> Needs attention</label>
 <label><input id="filter-passed" type="radio" name="claim-filter"> PASS</label>
 <label><input id="filter-failed" type="radio" name="claim-filter"> FAIL</label>
 <label><input id="filter-warning" type="radio" name="claim-filter"> WARNING</label>
@@ -40,12 +40,13 @@
 <label><input id="filter-inconclusive" type="radio" name="claim-filter"> INCONCLUSIVE</label>
 <label><input id="filter-advisory" type="radio" name="claim-filter"> ADVISORY</label>
 <label><input id="filter-overridden" type="radio" name="claim-filter"> OVERRIDDEN</label>
+<label><input id="filter-all" type="radio" name="claim-filter"> Show all</label>
 </fieldset>
 <div class="claim-list"><article class="claim status-failed">
 <header><span class="status">FAIL</span><h3>package manager</h3></header>
 <dl>
-<dt>Source</dt><dd><code>/demo/sample-monorepo/AGENTS.md:3</code></dd>
-<dt>Scope</dt><dd><code>/demo/sample-monorepo</code></dd>
+<dt>Source</dt><dd><code>AGENTS.md:3</code></dd>
+<dt>Scope</dt><dd><code>.</code></dd>
 </dl>
 <h4>Original instruction</h4>
 <pre><code>- Use npm as the package manager for this repository.</code></pre>
@@ -58,8 +59,8 @@
 <article class="claim status-failed">
 <header><span class="status">FAIL</span><h3>path exists</h3></header>
 <dl>
-<dt>Source</dt><dd><code>/demo/sample-monorepo/AGENTS.md:4</code></dd>
-<dt>Scope</dt><dd><code>/demo/sample-monorepo</code></dd>
+<dt>Source</dt><dd><code>AGENTS.md:4</code></dd>
+<dt>Scope</dt><dd><code>.</code></dd>
 </dl>
 <h4>Original instruction</h4>
 <pre><code>- Read `docs/DELETED_SETUP.md` before changing workspace configuration.</code></pre>
@@ -72,8 +73,8 @@
 <article class="claim status-failed">
 <header><span class="status">FAIL</span><h3>package script</h3></header>
 <dl>
-<dt>Source</dt><dd><code>/demo/sample-monorepo/AGENTS.md:5</code></dd>
-<dt>Scope</dt><dd><code>/demo/sample-monorepo</code></dd>
+<dt>Source</dt><dd><code>AGENTS.md:5</code></dd>
+<dt>Scope</dt><dd><code>.</code></dd>
 </dl>
 <h4>Original instruction</h4>
 <pre><code>- Run unit tests with `pnpm test`.</code></pre>
@@ -86,8 +87,8 @@
 <article class="claim status-failed">
 <header><span class="status">FAIL</span><h3>dependency present</h3></header>
 <dl>
-<dt>Source</dt><dd><code>/demo/sample-monorepo/AGENTS.md:6</code></dd>
-<dt>Scope</dt><dd><code>/demo/sample-monorepo</code></dd>
+<dt>Source</dt><dd><code>AGENTS.md:6</code></dd>
+<dt>Scope</dt><dd><code>.</code></dd>
 </dl>
 <h4>Original instruction</h4>
 <pre><code>- Use the installed Jest dependency for unit tests.</code></pre>
@@ -100,8 +101,8 @@
 <article class="claim status-passed">
 <header><span class="status">PASS</span><h3>command runs</h3></header>
 <dl>
-<dt>Source</dt><dd><code>/demo/sample-monorepo/AGENTS.md:7</code></dd>
-<dt>Scope</dt><dd><code>/demo/sample-monorepo</code></dd>
+<dt>Source</dt><dd><code>AGENTS.md:7</code></dd>
+<dt>Scope</dt><dd><code>.</code></dd>
 </dl>
 <h4>Original instruction</h4>
 <pre><code>- Run `node scripts/healthcheck.mjs` to verify the repository health check.</code></pre>
@@ -113,7 +114,7 @@
 <summary>Command output</summary>
 <dl>
 <dt>Command</dt><dd><code>node scripts/healthcheck.mjs</code></dd>
-<dt>Working directory</dt><dd><code>/tmp/agentcontract-worktree-demo/checkout</code></dd>
+<dt>Working directory</dt><dd><code>/tmp/escrow-worktree-demo/checkout</code></dd>
 <dt>Status</dt><dd>PASSED</dd>
 <dt>Exit code</dt><dd>0</dd>
 <dt>Duration</dt><dd>103ms</dd>

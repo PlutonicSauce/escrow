@@ -1,4 +1,4 @@
-# AgentContract Implementation Plan
+# Escrow Implementation Plan
 
 ## Plan rules
 
@@ -52,7 +52,7 @@ README.md
 - Node.js 20+
 - TypeScript strict mode
 - Commander-based CLI
-- `agentcontract check <repository>` command
+- `escrow check <repository>` command
 - optional `--target <directory>`
 - consistent error handling
 - build script
@@ -83,7 +83,7 @@ README.md
 - Completed on 2026-07-13.
 - Added a Node.js 20+ package with a strict TypeScript build and Vitest unit
   test support.
-- Added a Commander CLI with `agentcontract check <repository>` and optional
+- Added a Commander CLI with `escrow check <repository>` and optional
   `--target <directory>` parsing.
 - Added centralized exit codes and handling for Commander usage errors and
   unexpected internal errors.
@@ -502,6 +502,7 @@ Vite
 Next.js
 React
 Playwright
+Zod
 ```
 
 ### Acceptance criteria
@@ -527,7 +528,7 @@ Playwright
 
 - Completed on 2026-07-13.
 - Added an explicit deterministic mapping table for Vitest, Jest, TypeScript,
-  ESLint, Prettier, Vite, Next.js, React, and the two supported Playwright
+  ESLint, Prettier, Vite, Next.js, React, Zod, and the two supported Playwright
   packages.
 - Added dependency validation across `dependencies`, `devDependencies`,
   `peerDependencies`, and `optionalDependencies` using the nearest applicable
@@ -611,9 +612,10 @@ test/unit/extraction/
 - Added a shipped JSON Schema and matching Zod response validation for exactly
   the six supported claim types, required source fields, relevant optional
   fields, and no AI-assigned statuses or verdicts.
-- Added deterministic verification that returned source files, scope
-  directories, inclusive line ranges, and original source text match the
-  supplied instruction chain.
+- Added deterministic verification that returned source files exactly match
+  the supplied instruction chain and inclusive line ranges fit the matched
+  instruction content. Scope and original source text are hydrated from that
+  matched instruction record rather than accepted from AI output.
 - Added extraction failure handling with exit code `3` for process startup,
   nonzero exit, timeout, empty output, malformed JSON, schema failure, and
   source-preservation failure.
@@ -627,6 +629,36 @@ test/unit/extraction/
   disabled manual-test gate.
 - Added no command execution, conflict analysis, repair behavior, Markdown or
   HTML reporting, or Milestone 9 functionality.
+
+### Post-completion source hydration fix — 2026-07-14
+
+- Split AI output (`RawExtractedClaim`) from the hydrated internal
+  `ExtractedClaim` model.
+- Parse Codex JSON only with `RawExtractedClaimSchema`, then parse every
+  deterministically hydrated object with `ExtractedClaimSchema` before it can
+  reach validators or reports.
+- Removed `originalText` and `scopeDirectory` from the Codex JSON Schema, Zod
+  response schema, prompt, and mocked subprocess responses.
+- Reconstructed exact inclusive source lines deterministically from the matched
+  discovered instruction file, preserving Markdown, indentation, multiline
+  formatting, and CRLF separators.
+- Added rejection coverage for invalid/beyond-file ranges, non-chain source
+  files, and model-authored source text, plus exact source/report coverage.
+- Build, strict type checking, all 428 tests, and a live local UI scan passed.
+
+### Post-completion path-intent false-positive fix — 2026-07-14
+
+- Tightened the Codex extraction prompt so `path_exists` is emitted only for
+  language that requires or assumes a current repository path.
+- Added deterministic post-hydration intent filtering using exact selected
+  source text and bounded local list context. Allowed/forbidden lists,
+  examples, output destinations, optional files, naming conventions, and
+  repair-mode file allowlists cannot become path-existence evidence.
+- Kept genuine read/see/use/review path references and the existing
+  repository-bounded path validator unchanged.
+- Added focused positive, exclusion, list-context, exact-reference, and
+  over-filtering regression coverage. Build, strict type checking, and all 447
+  tests pass.
 
 
 
@@ -707,7 +739,7 @@ test/integration/command-execution/
   environment, cleanup after success/failure/exception, retained worktrees,
   external symlinks, and active-checkout immutability.
 - Verified build, strict type checking, all 298 tests, one registered primary
-  worktree only, and no leaked AgentContract temporary directories.
+  worktree only, and no leaked Escrow temporary directories.
 - Added no conflict analysis, repair behavior, Markdown/HTML reporting, or
   Milestone 10 functionality.
 
@@ -845,7 +877,7 @@ test/unit/reporting/htmlReporter.test.ts
 
 - Completed on 2026-07-13.
 - Added pure Markdown and static HTML renderers that consume the same
-  `AgentContractReport` used by console and JSON output.
+  `EscrowReport` used by console and JSON output.
 - Added PR/submission-friendly Markdown with summary and instruction-chain
   sections, complete claim details, deterministic evidence, suggestions,
   explicit override/conflict sections, and native expandable command output.
@@ -870,7 +902,7 @@ test/unit/reporting/htmlReporter.test.ts
 - Verified build, strict type checking, all 373 normal tests, and the gated
   manual Codex test without making a live request.
 - Generated and inspected Markdown and HTML sample files from the shared rich
-  report fixture under `/private/tmp/agentcontract-m11-samples`; totals,
+  report fixture under `/private/tmp/escrow-m11-samples`; totals,
   sections, output escaping, standalone structure, filters, conflicts, and
   overrides were present as expected.
 - Added no hosted UI, React, server, repair mode, GitHub integration, or
@@ -907,7 +939,7 @@ test/integration/repair/
 - repair in temporary worktree
 - allow only instruction-file modifications
 - reject all other file changes
-- rerun AgentContract after repair
+- rerun Escrow after repair
 - reject new failures
 - show patch and before/after report
 - active repository changes only with `--apply`
@@ -934,12 +966,12 @@ test/integration/repair/
 ### Completion notes
 
 - Completed on 2026-07-13.
-- Added `agentcontract fix <repository>` with optional `--target`, `--apply`,
+- Added `escrow fix <repository>` with optional `--target`, `--apply`,
   `--model`, `--execute`, `--allow-network`, `--timeout`, and
   `--keep-worktree` support. Execution-related flags retain the existing
   documented-command safety behavior.
 - Reused the shared repository-evaluation path so repair mode produces the same
-  deterministic `AgentContractReport` before and after the proposed change.
+  deterministic `EscrowReport` before and after the proposed change.
 - Added a schema-constrained, Zod-validated Codex repair response containing
   only a unified diff. Codex runs non-interactively in a read-only sandbox with
   shell, hooks, apps, network search, repository rules, and user config
@@ -1058,12 +1090,109 @@ Also verify README instructions on a clean checkout.
 
 ---
 
+## Milestone 14 — Local Web Interface
+
+**Status:** COMPLETE
+
+### Goal
+
+Add a polished, loopback-only browser interface as a thin adapter over the
+existing Escrow application services and report models.
+
+### Expected files
+
+```text
+src/version.ts
+src/commands/ui.ts
+src/web/assets.ts
+src/web/openBrowser.ts
+src/web/server.ts
+test/unit/commands/ui.test.ts
+test/unit/web/assets.test.ts
+test/unit/web/server.test.ts
+test/integration/web/uiWorkflow.test.ts
+README.md
+SPEC.md
+PLAN.md
+IMPLEMENTATION.md
+```
+
+### Acceptance criteria
+
+- `escrow ui <repository>` supports target, port, model, browser-open,
+  command-execution, network, and timeout options.
+- The server selects an available port by default and binds only to
+  `127.0.0.1`.
+- The SPA exposes the effective instruction chain, shared report totals,
+  expandable evidence, status filters, repair preview/apply controls, and all
+  three downloadable file report formats.
+- Check, report, command-safety, and repair behavior reuse the existing
+  TypeScript application services rather than spawning or duplicating the CLI.
+- API requests cannot choose a different repository or supply arbitrary
+  commands; JSON request bodies are strict and size-limited.
+- Repair apply accepts only a matching verified in-memory preview and requires
+  explicit confirmation.
+- Automated tests cover parsing, startup/shutdown, loopback binding, API
+  boundaries, escaping, reports, repair confirmation/rejection, shared totals,
+  and a mocked-Codex fixture workflow.
+- Build, strict type checking, all tests, and the documented manual demo flow
+  pass.
+
+### Completion notes
+
+- Completed on 2026-07-14.
+- Added a dependency-free responsive SPA served by Node's built-in HTTP server,
+  with no React, remote binding, CORS, persistence, telemetry, or new product
+  integration.
+- Reused `createRepositoryReport`, `fixRepository`, the shared report
+  renderers, `applyVerifiedPatch`, existing command policy, and existing
+  temporary-worktree lifecycle as the only check and repair implementations.
+- Added strict JSON schemas, a 16 KiB request limit, security headers,
+  repository/target boundaries, in-memory report/preview state, and explicit
+  matching-preview confirmation for apply.
+- Added focused UI, reporting, path-display, dependency-mapping, and demo
+  workflow coverage. The final suite passes with 38 files and 463 tests.
+- A live synthetic demo produced the expected 1 pass and 4 failures, downloaded
+  consistent JSON/Markdown/HTML reports, verified an `AGENTS.md`-only repair,
+  applied that exact confirmed preview, and rechecked successfully with 3
+  passed claims and no failures. Ctrl+C closed the server and no temporary
+  worktrees remained.
+
+### Final hackathon demo polish — 2026-07-14
+
+- Standardized every public product surface on **Escrow**, including the npm
+  package/bin, browser title and interface, CLI help and errors, reports,
+  sample artifacts, README, and project documentation. Existing internal
+  TypeScript report/error interface names remain implementation details.
+- Added the deterministic `Zod -> zod` dependency mapping and coverage for
+  installed, missing, development dependency, and nested package scopes.
+- Made scan results issue-first: failed, warning, blocked, and inconclusive
+  claims are shown initially; a clean scan falls back to passed claims;
+  advisory claims remain counted and are available through **Advisory** and
+  **Show all** filters.
+- Added one repository-boundary-aware display-path helper shared by console,
+  Markdown, HTML, and browser rendering. Trusted in-repository paths are
+  repository-relative, while outside paths are explicitly marked rather than
+  presented as repository-relative evidence. JSON retains canonical paths for
+  machine consumers.
+- Replaced plain report links with keyboard-focusable **Download JSON**,
+  **Download Markdown**, and **Download HTML** controls backed by the existing
+  endpoints and shared report object.
+- Added a resettable ignored demo checkout generated from
+  `demo/sample-monorepo`. Its broken state deterministically yields one passing
+  safe command and exactly four failures; its nested override remains valid;
+  the verified instruction-only repair revalidates to PASS.
+- Final live workflow completed in 66.48 seconds: scan `1 passed / 4 failed`,
+  verified preview changed only `AGENTS.md`, preview revalidation was
+  `3 passed / 0 failed`, explicit apply succeeded, final scan was
+  `3 passed / 0 failed`, and all three downloads returned HTTP 200.
+
+---
+
 ## Current milestone
 
 
-**Milestone 1 — Project foundation**
-
-Do not implement later milestones until Milestone 1 is complete and reviewed.
+**Milestone 14 — Local Web Interface**
 
 **Milestone 1 — Project foundation is complete.**
 
@@ -1091,3 +1220,4 @@ Do not implement later milestones until Milestone 1 is complete and reviewed.
 
 **Milestone 13 — Demo repository and final polish is complete.**
 
+**Milestone 14 — Local Web Interface is complete.**

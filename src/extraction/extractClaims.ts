@@ -3,7 +3,11 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
 
-import type { ExtractedClaim, ValidatedClaim } from "../models/claims.js";
+import type {
+  ExtractedClaim,
+  RawExtractedClaim,
+  ValidatedClaim,
+} from "../models/claims.js";
 import type { InstructionConflict } from "../models/conflicts.js";
 import type { InstructionFile } from "../models/instructions.js";
 import { CodexExtractionError, getErrorMessage } from "../utils/errors.js";
@@ -14,12 +18,16 @@ import {
   type EffectiveClaimScope,
 } from "../validation/conflictValidator.js";
 import { validateClaim } from "../validation/validateClaim.js";
-import { codexExtractionResponseSchema } from "./claimSchema.js";
+import {
+  extractedClaimSchema,
+  rawCodexExtractionResponseSchema,
+} from "./claimSchema.js";
 import {
   runCodexProcess,
   type CodexProcessRunner,
 } from "./codexClient.js";
 import { buildExtractionPrompt } from "./extractionPrompt.js";
+import { hasRequiredPathIntent } from "./pathClaimIntent.js";
 
 export const DEFAULT_CODEX_MODEL = "gpt-5.6-terra";
 export const DEFAULT_EXTRACTION_TIMEOUT_MS = 120_000;
@@ -68,9 +76,13 @@ export function resolveCodexModel(
     return model;
   }
 
+<<<<<<< HEAD
   // ESCROW_CODEX_MODEL is the public setting. Keep the original variable as a
   // compatibility alias for existing AgentContract-era automation.
   const environmentModel = environment.ESCROW_CODEX_MODEL ?? environment.AGENTCONTRACT_CODEX_MODEL;
+=======
+  const environmentModel = environment.ESCROW_CODEX_MODEL;
+>>>>>>> 0453a20 (Add interactive local Escrow interface)
   if (environmentModel !== undefined) {
     const model = environmentModel.trim();
     if (model.length === 0) {
@@ -95,43 +107,107 @@ function formatSchemaIssues(
     .join("; ");
 }
 
-function verifyClaimSources(
-  claims: readonly ExtractedClaim[],
+interface SourceLine {
+  text: string;
+  lineEnding: string;
+}
+
+function splitSourceLines(content: string): SourceLine[] {
+  const lines: SourceLine[] = [];
+  const lineEndingPattern = /\r\n|\n/gu;
+  let offset = 0;
+  for (const match of content.matchAll(lineEndingPattern)) {
+    const matchIndex = match.index;
+    lines.push({
+      text: content.slice(offset, matchIndex),
+      lineEnding: match[0],
+    });
+    offset = matchIndex + match[0].length;
+  }
+  lines.push({ text: content.slice(offset), lineEnding: "" });
+  return lines;
+}
+
+function getClaimContext(
+  sourceLines: readonly SourceLine[],
+  lineStart: number,
+  lineEnd: number,
+): string {
+  let contextStart = lineStart - 1;
+  const lowerBound = Math.max(0, contextStart - 12);
+  while (contextStart > lowerBound) {
+    const previousLine = sourceLines[contextStart - 1];
+    if (previousLine === undefined || previousLine.text.trim().length === 0) {
+      break;
+    }
+    contextStart -= 1;
+  }
+  return sourceLines
+    .slice(contextStart, lineEnd)
+    .map((line) => line.text)
+    .join("\n");
+}
+
+function hydrateClaimSources(
+  claims: readonly RawExtractedClaim[],
   instructionChain: readonly InstructionFile[],
-): void {
+): ExtractedClaim[] {
   const instructionsByPath = new Map(
     instructionChain.map((instruction) => [instruction.path, instruction]),
   );
 
-  for (const claim of claims) {
+  const hydratedClaims = claims.map((claim): ExtractedClaim => {
     const instruction = instructionsByPath.get(claim.sourceFile);
     if (instruction === undefined) {
       throw new CodexExtractionError(
         `Codex returned claim "${claim.id}" for an instruction file that was not supplied: "${claim.sourceFile}".`,
       );
     }
-    if (claim.scopeDirectory !== instruction.directory) {
-      throw new CodexExtractionError(
-        `Codex returned claim "${claim.id}" with scopeDirectory "${claim.scopeDirectory}" instead of supplied scope "${instruction.directory}".`,
-      );
-    }
-
-    const sourceLines = instruction.content.replaceAll("\r\n", "\n").split("\n");
+    const sourceLines = splitSourceLines(instruction.content);
     if (claim.lineEnd > sourceLines.length) {
       throw new CodexExtractionError(
         `Codex returned claim "${claim.id}" with lineEnd ${claim.lineEnd}, but "${claim.sourceFile}" has ${sourceLines.length} lines.`,
       );
     }
 
-    const expectedText = sourceLines
-      .slice(claim.lineStart - 1, claim.lineEnd)
-      .join("\n");
-    if (claim.originalText !== expectedText) {
+    const selectedLines = sourceLines.slice(claim.lineStart - 1, claim.lineEnd);
+    const originalText = selectedLines
+      .map((line, index) =>
+        index === selectedLines.length - 1 ? line.text : line.text + line.lineEnding,
+      )
+      .join("");
+    const hydratedClaim = {
+      ...claim,
+      originalText,
+      scopeDirectory: instruction.directory,
+    };
+    const parsedHydratedClaim = extractedClaimSchema.safeParse(hydratedClaim);
+    if (!parsedHydratedClaim.success) {
       throw new CodexExtractionError(
-        `Codex did not preserve originalText for claim "${claim.id}" at ${claim.sourceFile}:${claim.lineStart}-${claim.lineEnd}.`,
+        `Hydrated claim "${claim.id}" failed ExtractedClaim schema validation: ${formatSchemaIssues(parsedHydratedClaim.error.issues)}.`,
       );
     }
-  }
+    return parsedHydratedClaim.data;
+  });
+
+  return hydratedClaims.filter((claim) => {
+    if (claim.type !== "path_exists" || claim.referencedPath === undefined) {
+      return true;
+    }
+    const instruction = instructionsByPath.get(claim.sourceFile);
+    if (instruction === undefined) {
+      return false;
+    }
+    return hasRequiredPathIntent({
+      originalText: claim.originalText,
+      contextText: getClaimContext(
+        splitSourceLines(instruction.content),
+        claim.lineStart,
+        claim.lineEnd,
+      ),
+      referencedPath: claim.referencedPath,
+    });
+  });
 }
 
 export async function extractClaims(
@@ -147,7 +223,7 @@ export async function extractClaims(
   let extractionWorkingDirectory: string;
   try {
     extractionWorkingDirectory = await mkdtemp(
-      join(tmpdir(), "agentcontract-extraction-"),
+      join(tmpdir(), "escrow-extraction-"),
     );
   } catch (error: unknown) {
     throw new CodexExtractionError(
@@ -241,15 +317,14 @@ export async function extractClaims(
     );
   }
 
-  const parsed = codexExtractionResponseSchema.safeParse(parsedOutput);
+  const parsed = rawCodexExtractionResponseSchema.safeParse(parsedOutput);
   if (!parsed.success) {
     throw new CodexExtractionError(
       `Codex claim extraction failed schema validation: ${formatSchemaIssues(parsed.error.issues)}`,
     );
   }
 
-  verifyClaimSources(parsed.data.claims, options.instructionChain);
-  return parsed.data.claims;
+  return hydrateClaimSources(parsed.data.claims, options.instructionChain);
 }
 
 export async function validateExtractedClaims(

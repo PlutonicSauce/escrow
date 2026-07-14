@@ -1,8 +1,8 @@
-# AgentContract — Devpost submission
+# Escrow — Devpost submission
 
 ## Project name
 
-AgentContract
+Escrow
 
 ## Tagline
 
@@ -20,7 +20,7 @@ commands, installed frameworks, and documents that contributors should read.
 As a repository evolves, the instructions can quietly become stale even though
 they still look authoritative.
 
-AgentContract is a local CLI that checks those instructions against the
+Escrow is a local CLI that checks those instructions against the
 repository they describe. It uses Codex with GPT-5.6 to convert natural-language
 instructions into schema-constrained candidate claims, but it does not let the
 model decide whether anything passed. TypeScript validators compare each claim
@@ -30,7 +30,7 @@ HTML reports with source locations and deterministic evidence.
 
 The included demo repository intentionally says npm while using pnpm, points to
 a deleted document, references a missing test script, and claims Jest is
-installed while declaring Vitest. AgentContract reports all four discrepancies,
+installed while declaring Vitest. Escrow reports all four discrepancies,
 recognizes a valid nested pnpm override, safely runs a documented health check
 outside the active checkout, and can ask Codex for a minimal `AGENTS.md` repair.
 The repair is accepted only after deterministic changed-file checks and a full
@@ -46,7 +46,7 @@ failure may appear only after an agent has already acted on it.
 
 ## The solution
 
-AgentContract turns the verifiable parts of repository guidance into evidence-
+Escrow turns the verifiable parts of repository guidance into evidence-
 backed checks:
 
 - `path_exists`: referenced files and directories must exist inside the Git
@@ -82,15 +82,15 @@ subtree without becoming false conflicts.
 6. When `--execute` is present, classify the documented command and run allowed
    commands in a detached temporary Git worktree with timeout and output
    capture.
-7. Aggregate one shared `AgentContractReport` and render it as console, JSON,
+7. Aggregate one shared `EscrowReport` and render it as console, JSON,
    Markdown, or self-contained HTML.
 8. In repair mode, ask Codex for a minimal documentation-only diff, verify the
-   patch in a temporary worktree, rerun AgentContract, reject new failures, and
+   patch in a temporary worktree, rerun Escrow, reject new failures, and
    modify the active checkout only when `--apply` is explicit.
 
 ## Technical architecture
 
-AgentContract is a Node.js 20+ ESM CLI written in strict TypeScript. Commander
+Escrow is a Node.js 20+ ESM CLI written in strict TypeScript. Commander
 provides the command-line interface, Zod validates external and AI-generated
 data, and Vitest covers unit and Git-backed integration behavior. The runtime
 dependency set is intentionally limited to Commander and Zod.
@@ -112,7 +112,7 @@ deterministic validators and conflict handling
         +---- optional policy -> temporary Git worktree -> command result
         |
         v
-one shared AgentContractReport
+one shared EscrowReport
         |
         +---- console
         +---- JSON
@@ -151,7 +151,7 @@ GPT-5.6 does not assign pass, fail, warning, blocked, inconclusive, advisory, or
 overridden statuses. It does not decide which instruction files apply, execute
 documented commands, accept patches, or calculate report totals. The default
 model is `gpt-5.6`; users can override it with `--model` or
-`AGENTCONTRACT_CODEX_MODEL`, subject to their Codex account's model access.
+`ESCROW_CODEX_MODEL`, subject to their Codex account's model access.
 
 ## Key design decisions made by the team
 
@@ -173,7 +173,7 @@ model is `gpt-5.6`; users can override it with `--model` or
 
 ## Safety model
 
-AgentContract reduces risk through layered, fail-closed boundaries:
+Escrow reduces risk through layered, fail-closed boundaries:
 
 - AI output is constrained by JSON Schema and validated again with Zod.
 - Source paths, exact source text, line ranges, scope, and supported claim types
@@ -188,7 +188,7 @@ AgentContract reduces risk through layered, fail-closed boundaries:
 - Repair previews are the default. Candidate patches are limited to existing
   effective instruction files, checked for structural and binary changes,
   revalidated, and rejected if they introduce new failures.
-- AgentContract never commits or pushes.
+- Escrow never commits or pushes.
 
 This is not a universal host sandbox. Network denial is policy- and environment-
 based where practical, and an otherwise allowed repository script is not
@@ -203,7 +203,7 @@ contained against every possible transitive filesystem behavior.
 - npm, pnpm, and Yarn;
 - root and nested `AGENTS.md` and `AGENTS.override.md` files;
 - deterministic dependency mappings for Vitest, Jest, TypeScript, ESLint,
-  Prettier, Vite, Next.js, React, and Playwright;
+  Prettier, Vite, Next.js, React, Playwright, and Zod;
 - console, JSON, Markdown, and self-contained static HTML reports.
 
 ## Repository setup summary
@@ -227,19 +227,19 @@ npm run build
 node dist/index.js --help
 ```
 
-Optionally run `npm link` to expose the local `agentcontract` binary. Otherwise,
-use `node /path/to/agentcontract/dist/index.js` directly.
+Optionally run `npm link` to expose the local `escrow` binary. Otherwise,
+use `node /path/to/escrow/dist/index.js` directly.
 
 Basic usage:
 
 ```bash
-agentcontract check /path/to/repository
-agentcontract check /path/to/repository --target packages/api
-agentcontract check /path/to/repository --execute --timeout 120
-agentcontract check /path/to/repository \
+escrow check /path/to/repository
+escrow check /path/to/repository --target packages/api
+escrow check /path/to/repository --execute --timeout 120
+escrow check /path/to/repository \
   --json report.json --markdown report.md --html report.html
-agentcontract fix /path/to/repository
-agentcontract fix /path/to/repository --apply
+escrow fix /path/to/repository
+escrow fix /path/to/repository --apply
 ```
 
 ## Testing instructions
@@ -258,7 +258,7 @@ contains 402 passing tests across 30 test files.
 The optional live extraction test is explicitly gated:
 
 ```bash
-AGENTCONTRACT_RUN_CODEX_INTEGRATION=1 npm run test:codex-integration
+ESCROW_RUN_CODEX_INTEGRATION=1 npm run test:codex-integration
 ```
 
 ## Known limitations
@@ -281,7 +281,7 @@ AGENTCONTRACT_RUN_CODEX_INTEGRATION=1 npm run test:codex-integration
   script.
 - Repair mode requires a clean active checkout and updates existing effective
   instruction files only.
-- AgentContract does not provide Windows support, hosted UI, React, GitHub or
+- Escrow does not provide Windows support, hosted UI, React, GitHub or
   GitLab integration, pull-request comments, accounts, dashboards, repository
   indexing, vulnerability scanning, general code review, automatic source-code
   repair, commits, or pushes.

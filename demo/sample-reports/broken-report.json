@@ -113,7 +113,7 @@
       ],
       "commandResult": {
         "command": "node scripts/healthcheck.mjs",
-        "workingDirectory": "/tmp/agentcontract-worktree-demo/checkout",
+        "workingDirectory": "/tmp/escrow-worktree-demo/checkout",
         "status": "passed",
         "exitCode": 0,
         "stdout": "sample healthcheck passed\n",

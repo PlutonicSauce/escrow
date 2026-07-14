@@ -13,6 +13,7 @@ import { renderHtmlReport } from "../reporting/htmlReporter.js";
 import { renderJsonReport } from "../reporting/jsonReporter.js";
 import { renderMarkdownReport } from "../reporting/markdownReporter.js";
 import { CheckFailedError } from "../utils/errors.js";
+import { AGENTCONTRACT_VERSION } from "../version.js";
 
 export interface CheckCommandOptions {
   target?: string;
@@ -97,7 +98,7 @@ export async function createRepositoryReport(
   });
 
   return createAgentContractReport({
-    version: "0.1.0",
+    version: AGENTCONTRACT_VERSION,
     generatedAt: dependencies.generatedAt(),
     repositoryRoot: discovery.repositoryRoot,
     targetDirectory: discovery.targetDirectory,

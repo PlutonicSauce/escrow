@@ -1,1 +1,1 @@
-export const apiName = "agentcontract-demo-api";
+export const apiName = "escrow-demo-api";

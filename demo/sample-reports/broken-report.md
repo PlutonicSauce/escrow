@@ -21,14 +21,14 @@
 
 ## Instruction chain
 
-1. `/demo/sample-monorepo/AGENTS.md` — `AGENTS.md` in `/demo/sample-monorepo`
+1. `AGENTS.md` — `AGENTS.md` in `.`
 
 ## Claims
 
 ### FAIL · package manager
 
-- Source: `/demo/sample-monorepo/AGENTS.md:3`
-- Scope: `/demo/sample-monorepo`
+- Source: `AGENTS.md:3`
+- Scope: `.`
 
 **Original instruction**
 
@@ -51,8 +51,8 @@ npm
 
 ### FAIL · path exists
 
-- Source: `/demo/sample-monorepo/AGENTS.md:4`
-- Scope: `/demo/sample-monorepo`
+- Source: `AGENTS.md:4`
+- Scope: `.`
 
 **Original instruction**
 
@@ -73,8 +73,8 @@ docs/DELETED_SETUP.md
 
 ### FAIL · package script
 
-- Source: `/demo/sample-monorepo/AGENTS.md:5`
-- Scope: `/demo/sample-monorepo`
+- Source: `AGENTS.md:5`
+- Scope: `.`
 
 **Original instruction**
 
@@ -98,8 +98,8 @@ test
 
 ### FAIL · dependency present
 
-- Source: `/demo/sample-monorepo/AGENTS.md:6`
-- Scope: `/demo/sample-monorepo`
+- Source: `AGENTS.md:6`
+- Scope: `.`
 
 **Original instruction**
 
@@ -121,8 +121,8 @@ Jest
 
 ### PASS · command runs
 
-- Source: `/demo/sample-monorepo/AGENTS.md:7`
-- Scope: `/demo/sample-monorepo`
+- Source: `AGENTS.md:7`
+- Scope: `.`
 
 **Original instruction**
 
@@ -146,7 +146,7 @@ node scripts/healthcheck.mjs
 <summary>Command output</summary>
 <ul>
 <li>Command: <code>node scripts/healthcheck.mjs</code></li>
-<li>Working directory: <code>/tmp/agentcontract-worktree-demo/checkout</code></li>
+<li>Working directory: <code>/tmp/escrow-worktree-demo/checkout</code></li>
 <li>Status: <strong>PASSED</strong></li>
 <li>Exit code: <code>0</code></li>
 <li>Duration: <code>103ms</code></li>

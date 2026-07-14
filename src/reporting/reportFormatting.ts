@@ -3,6 +3,7 @@ import type {
   OverallStatus,
   ReportSummary,
 } from "../models/reports.js";
+import { formatRepositoryDisplayPath } from "./displayPaths.js";
 
 export const OVERALL_STATUS_LABELS: Record<OverallStatus, string> = {
   pass: "PASS",
@@ -37,10 +38,15 @@ export function formatSourceLocation(
   sourceFile: string,
   lineStart: number,
   lineEnd: number,
+  repositoryRoot?: string,
 ): string {
+  const displayedSource =
+    repositoryRoot === undefined
+      ? sourceFile
+      : formatRepositoryDisplayPath(repositoryRoot, sourceFile);
   return lineStart === lineEnd
-    ? `${sourceFile}:${String(lineStart)}`
-    : `${sourceFile}:${String(lineStart)}-${String(lineEnd)}`;
+    ? `${displayedSource}:${String(lineStart)}`
+    : `${displayedSource}:${String(lineStart)}-${String(lineEnd)}`;
 }
 
 export function formatTypeLabel(type: string): string {

@@ -1,8 +1,8 @@
-# AgentContract Engineering Rules
+# Escrow Engineering Rules
 
 ## Project purpose
 
-AgentContract is an executable verification tool for `AGENTS.md` and
+Escrow is an executable verification tool for `AGENTS.md` and
 `AGENTS.override.md`.
 
 It extracts verifiable repository instructions, validates them against the

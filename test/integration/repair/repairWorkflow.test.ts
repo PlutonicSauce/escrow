@@ -156,7 +156,6 @@ function extractionResponse(request: CodexProcessRequest): CodexProcessResult {
   const jsonStart = request.stdin.indexOf("[", markerIndex);
   const supplied = JSON.parse(request.stdin.slice(jsonStart)) as Array<{
     sourceFile: string;
-    scopeDirectory: string;
     numberedContent: string;
   }>;
   const instruction = supplied[0];
@@ -171,9 +170,6 @@ function extractionResponse(request: CodexProcessRequest): CodexProcessResult {
     : originalText.includes("yarn")
       ? "yarn"
       : "npm";
-  const commandText = instruction.numberedContent
-    .split("\n")[1]
-    ?.replace(/^2: /u, "") ?? "";
   return {
     exitCode: 0,
     stdout: JSON.stringify({
@@ -184,9 +180,7 @@ function extractionResponse(request: CodexProcessRequest): CodexProcessResult {
           sourceFile: instruction.sourceFile,
           lineStart: 1,
           lineEnd: 1,
-          originalText,
           normalizedValue: manager,
-          scopeDirectory: instruction.scopeDirectory,
           packageManager: manager,
           confidence: 1,
           extractionReason: "Explicit package-manager instruction.",
@@ -197,9 +191,7 @@ function extractionResponse(request: CodexProcessRequest): CodexProcessResult {
           sourceFile: instruction.sourceFile,
           lineStart: 2,
           lineEnd: 2,
-          originalText: commandText,
           normalizedValue: "node --version",
-          scopeDirectory: instruction.scopeDirectory,
           command: "node --version",
           confidence: 1,
           extractionReason: "Explicit documented command.",

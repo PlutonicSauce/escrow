@@ -1,5 +1,5 @@
 {
-  "name": "agentcontract-sample-monorepo",
+  "name": "escrow-sample-monorepo",
   "private": true,
   "packageManager": "pnpm@10.0.0",
   "scripts": {

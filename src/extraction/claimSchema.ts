@@ -8,6 +8,7 @@ import {
   REPOSITORY_INCONSISTENCY_KINDS,
   type BranchCommandResult,
   type ExtractedClaim,
+  type RawExtractedClaim,
   type RepositoryInconsistency,
   type ValidatedClaim,
 } from "../models/claims.js";
@@ -16,15 +17,13 @@ export const claimTypeSchema = z.enum(CLAIM_TYPES);
 export const claimStatusSchema = z.enum(CLAIM_STATUSES);
 export const packageManagerSchema = z.enum(PACKAGE_MANAGERS);
 
-const extractedClaimShape = {
+const rawExtractedClaimShape = {
   id: z.string().min(1, "Claim id is required"),
   type: claimTypeSchema,
   sourceFile: z.string().min(1, "Source file is required"),
   lineStart: z.int().positive("lineStart must be a positive integer"),
   lineEnd: z.int().positive("lineEnd must be a positive integer"),
-  originalText: z.string().min(1, "Original text is required"),
   normalizedValue: z.string().min(1, "Normalized value is required"),
-  scopeDirectory: z.string().min(1, "Scope directory is required"),
   command: z.string().min(1, "Command cannot be empty").optional(),
   referencedPath: z.string().min(1, "Referenced path cannot be empty").optional(),
   packageManager: packageManagerSchema.optional(),
@@ -35,6 +34,12 @@ const extractedClaimShape = {
     .optional(),
   confidence: z.number().min(0).max(1),
   extractionReason: z.string().min(1, "Extraction reason is required"),
+};
+
+const extractedClaimShape = {
+  ...rawExtractedClaimShape,
+  originalText: z.string().min(1, "Original text is required"),
+  scopeDirectory: z.string().min(1, "Scope directory is required"),
 };
 
 const OPTIONAL_CLAIM_FIELDS = [
@@ -88,9 +93,13 @@ export const extractedClaimSchema = z
   .strictObject(extractedClaimShape)
   .superRefine(addLineRangeIssue);
 
-export const codexExtractionResponseSchema = z
+export const rawExtractedClaimSchema = z
+  .strictObject(rawExtractedClaimShape)
+  .superRefine(addLineRangeIssue);
+
+export const rawCodexExtractionResponseSchema = z
   .strictObject({
-    claims: z.array(extractedClaimSchema),
+    claims: z.array(rawExtractedClaimSchema),
   })
   .superRefine((value, context) => {
     for (const [claimIndex, claim] of value.claims.entries()) {
@@ -180,6 +189,9 @@ type Assert<Condition extends true> = Condition;
 
 type _ExtractedClaimSchemaMatchesModel = Assert<
   IsMutuallyAssignable<z.output<typeof extractedClaimSchema>, ExtractedClaim>
+>;
+type _RawExtractedClaimSchemaMatchesModel = Assert<
+  IsMutuallyAssignable<z.output<typeof rawExtractedClaimSchema>, RawExtractedClaim>
 >;
 type _ValidatedClaimSchemaMatchesModel = Assert<
   IsMutuallyAssignable<z.output<typeof validatedClaimSchema>, ValidatedClaim>

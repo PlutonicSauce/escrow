@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { runCli, type CliDependencies } from "../../src/cli.js";
 import type { CheckCommandHandler } from "../../src/commands/check.js";
 import type { FixCommandHandler } from "../../src/commands/fix.js";
+import type { UiCommandHandler } from "../../src/commands/ui.js";
 import {
   CheckFailedError,
   CodexExtractionError,
@@ -13,6 +14,7 @@ import {
 interface CliHarness {
   check: ReturnType<typeof vi.fn<CheckCommandHandler>>;
   fix: ReturnType<typeof vi.fn<FixCommandHandler>>;
+  ui: ReturnType<typeof vi.fn<UiCommandHandler>>;
   dependencies: CliDependencies;
   stdout: string[];
   stderr: string[];
@@ -23,13 +25,16 @@ function createHarness(): CliHarness {
   const stderr: string[] = [];
   const check = vi.fn<CheckCommandHandler>();
   const fix = vi.fn<FixCommandHandler>();
+  const ui = vi.fn<UiCommandHandler>();
 
   return {
     check,
     fix,
+    ui,
     dependencies: {
       check,
       fix,
+      ui,
       writeOut: (message: string): void => {
         stdout.push(message);
       },
@@ -163,6 +168,61 @@ describe("runCli", () => {
     expect(harness.check).not.toHaveBeenCalled();
   });
 
+  it("parses local UI options without enabling browser opening explicitly", async () => {
+    const harness = createHarness();
+
+    const exitCode = await runCli(
+      [
+        "ui",
+        ".",
+        "--target",
+        "packages/api",
+        "--port",
+        "4173",
+        "--model",
+        "gpt-ui",
+        "--no-open",
+        "--execute",
+        "--allow-network",
+        "--timeout",
+        "2.5",
+      ],
+      harness.dependencies,
+    );
+
+    expect(exitCode).toBe(ExitCode.success);
+    expect(harness.ui).toHaveBeenCalledWith(".", {
+      target: "packages/api",
+      port: 4173,
+      model: "gpt-ui",
+      open: false,
+      execute: true,
+      allowNetwork: true,
+      timeout: 2.5,
+    });
+    expect(harness.check).not.toHaveBeenCalled();
+    expect(harness.fix).not.toHaveBeenCalled();
+  });
+
+  it("selects an available port and opens the browser by default", async () => {
+    const harness = createHarness();
+
+    const exitCode = await runCli(["ui", "."], harness.dependencies);
+
+    expect(exitCode).toBe(ExitCode.success);
+    expect(harness.ui).toHaveBeenCalledWith(".", { open: true });
+  });
+
+  it("rejects invalid local UI ports", async () => {
+    const harness = createHarness();
+
+    const exitCode = await runCli(["ui", ".", "--port", "70000"], harness.dependencies);
+
+    expect(exitCode).toBe(ExitCode.invalidArguments);
+    expect(harness.ui).not.toHaveBeenCalled();
+    expect(harness.stderr.join("")).toContain("port must be an integer between 1 and 65535");
+  });
+
   it("rejects invalid command timeouts", async () => {
     const harness = createHarness();
 
@@ -245,7 +305,13 @@ describe("runCli", () => {
 
     expect(exitCode).toBe(ExitCode.success);
     expect(harness.stdout.join("")).toContain("Usage: escrow");
+<<<<<<< HEAD
+=======
+    expect(harness.stdout.join("")).toContain("local Escrow browser interface");
+    expect(harness.stdout.join("")).not.toMatch(/AgentContract|ProofCatcher/u);
+>>>>>>> 0453a20 (Add interactive local Escrow interface)
     expect(harness.stdout.join("")).toContain("check");
     expect(harness.stdout.join("")).toContain("fix");
+    expect(harness.stdout.join("")).toContain("ui");
   });
 });

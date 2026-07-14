@@ -36,15 +36,13 @@ export interface RepositoryInconsistency {
   evidence: string[];
 }
 
-export interface ExtractedClaim {
+export interface RawExtractedClaim {
   id: string;
   type: ClaimType;
   sourceFile: string;
   lineStart: number;
   lineEnd: number;
-  originalText: string;
   normalizedValue: string;
-  scopeDirectory: string;
   command?: string | undefined;
   referencedPath?: string | undefined;
   packageManager?: PackageManager | undefined;
@@ -52,6 +50,11 @@ export interface ExtractedClaim {
   dependencyNames?: string[] | undefined;
   confidence: number;
   extractionReason: string;
+}
+
+export interface ExtractedClaim extends RawExtractedClaim {
+  originalText: string;
+  scopeDirectory: string;
 }
 
 export const COMMAND_RESULT_STATUSES = [

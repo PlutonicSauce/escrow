@@ -8,6 +8,7 @@ import {
   formatSourceLocation,
   formatTypeLabel,
 } from "./reportFormatting.js";
+import { formatRepositoryDisplayPath } from "./displayPaths.js";
 
 function escapeMarkdownText(value: string): string {
   return value
@@ -70,12 +71,12 @@ function renderCommandResult(command: BranchCommandResult): string[] {
   return lines;
 }
 
-function renderClaim(claim: ValidatedClaim): string[] {
+function renderClaim(claim: ValidatedClaim, repositoryRoot: string): string[] {
   const lines = [
     `### ${CLAIM_STATUS_LABELS[claim.status]} · ${formatTypeLabel(claim.type)}`,
     "",
-    `- Source: ${inlineCode(formatSourceLocation(claim.sourceFile, claim.lineStart, claim.lineEnd))}`,
-    `- Scope: ${inlineCode(claim.scopeDirectory)}`,
+    `- Source: ${inlineCode(formatSourceLocation(claim.sourceFile, claim.lineStart, claim.lineEnd, repositoryRoot))}`,
+    `- Scope: ${inlineCode(formatRepositoryDisplayPath(repositoryRoot, claim.scopeDirectory))}`,
     "",
     "**Original instruction**",
     "",
@@ -118,17 +119,20 @@ function renderClaim(claim: ValidatedClaim): string[] {
   return lines;
 }
 
-function renderConflict(conflict: InstructionConflict): string[] {
+function renderConflict(
+  conflict: InstructionConflict,
+  repositoryRoot: string,
+): string[] {
   const lines = [
     `### ${escapeMarkdownText(formatTypeLabel(conflict.type))}`,
     "",
-    `- Effective scope: ${inlineCode(conflict.effectiveScopeDirectory)}`,
+    `- Effective scope: ${inlineCode(formatRepositoryDisplayPath(repositoryRoot, conflict.effectiveScopeDirectory))}`,
     `- Conflict: ${escapeMarkdownText(conflict.message)}`,
     "- Sources:",
   ];
   for (const claim of conflict.claims) {
     lines.push(
-      `  - ${inlineCode(formatSourceLocation(claim.sourceFile, claim.lineStart, claim.lineEnd))}: ${inlineCode(claim.normalizedValue)}`,
+      `  - ${inlineCode(formatSourceLocation(claim.sourceFile, claim.lineStart, claim.lineEnd, repositoryRoot))}: ${inlineCode(claim.normalizedValue)}`,
     );
   }
   return lines;
@@ -162,7 +166,7 @@ export function renderMarkdownReport(report: AgentContractReport): string {
   } else {
     for (const [index, instruction] of report.instructionChain.entries()) {
       lines.push(
-        `${String(index + 1)}. ${inlineCode(instruction.path)} — ${inlineCode(instruction.fileName)} in ${inlineCode(instruction.directory)}`,
+        `${String(index + 1)}. ${inlineCode(formatRepositoryDisplayPath(report.repositoryRoot, instruction.path))} — ${inlineCode(instruction.fileName)} in ${inlineCode(formatRepositoryDisplayPath(report.repositoryRoot, instruction.directory))}`,
       );
     }
   }
@@ -172,7 +176,7 @@ export function renderMarkdownReport(report: AgentContractReport): string {
     lines.push("No claims were extracted.");
   } else {
     for (const claim of report.claims) {
-      lines.push(...renderClaim(claim), "");
+      lines.push(...renderClaim(claim, report.repositoryRoot), "");
     }
   }
 
@@ -183,7 +187,7 @@ export function renderMarkdownReport(report: AgentContractReport): string {
   } else {
     for (const claim of overrides) {
       lines.push(
-        `- ${inlineCode(formatSourceLocation(claim.sourceFile, claim.lineStart, claim.lineEnd))}: ${inlineCode(claim.normalizedValue)}`,
+        `- ${inlineCode(formatSourceLocation(claim.sourceFile, claim.lineStart, claim.lineEnd, report.repositoryRoot))}: ${inlineCode(claim.normalizedValue)}`,
       );
     }
   }
@@ -193,7 +197,7 @@ export function renderMarkdownReport(report: AgentContractReport): string {
     lines.push("No instruction conflicts were detected.");
   } else {
     for (const conflict of report.conflicts) {
-      lines.push(...renderConflict(conflict), "");
+      lines.push(...renderConflict(conflict, report.repositoryRoot), "");
     }
   }
 

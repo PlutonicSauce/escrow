@@ -28,7 +28,7 @@ describe("renderConsoleReport", () => {
     expect(output).toContain("packages/api/AGENTS.md:12-14");
     expect(output).toContain("AGENTS.md:7");
     expect(output).toContain("Instruction chain:");
-    expect(output).toContain("/repo/AGENTS.md (AGENTS.md)");
+    expect(output).toContain("AGENTS.md (AGENTS.md)");
     expect(output).toContain("Normalized: docs/architecture.md");
   });
 
@@ -111,7 +111,7 @@ describe("renderConsoleReport", () => {
     );
 
     expect(output).toContain(
-      "[CONFLICT] package manager in /repo/packages/api",
+      "[CONFLICT] package manager in packages/api",
     );
     expect(output).toContain("Escrow: FAIL");
     expect(output).toContain("Source: AGENTS.md:2 (npm)");
