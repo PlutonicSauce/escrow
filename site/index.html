@@ -386,12 +386,12 @@ const { useState, useEffect, useRef, memo, createElement } = React;
 const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 if (window.gsap && window.ScrollTrigger) gsap.registerPlugin(ScrollTrigger);
 
-/* =====================================================================
+/* ---------------------------------------------------------------------
    DotField — from React Bits, adapted in place (no separate CSS import
    since this is a single-file build). Canvas 2D grid of dots that bulge
    away from the cursor, plus an SVG radial glow that trails it.
    Tuned to the Escrow palette (violet -> blue).
-   ===================================================================== */
+   --------------------------------------------------------------------- */
 const TWO_PI = Math.PI * 2;
 
 const DotField = memo(({
@@ -644,7 +644,7 @@ const DotField = memo(({
 });
 DotField.displayName = 'DotField';
 
-/* ===================== terminal demo ===================== */
+/* --------------------- terminal demo --------------------- */
 const SCRIPT = [
   { t: 'cmd', text: 'escrow check .' },
   { t: 'dim', text: 'discovering instructions from git root...' },
@@ -736,7 +736,7 @@ function Terminal(){
   );
 }
 
-/* ===================== gsap scroll reveal ===================== */
+/* --------------------- gsap scroll reveal --------------------- */
 function Reveal({ children, className = '', tag: Tag = 'div' }){
   const ref = useRef(null);
   useEffect(() => {
@@ -758,7 +758,7 @@ function Reveal({ children, className = '', tag: Tag = 'div' }){
   return <Tag ref={ref} className={`reveal ${className}`}>{children}</Tag>;
 }
 
-/* ===================== magnetic pill buttons ===================== */
+/* --------------------- magnetic pill buttons --------------------- */
 function Magnetic({ children, className, href, onClick }){
   const ref = useRef(null);
   useEffect(() => {
@@ -868,7 +868,7 @@ function LiveCheck() {
   );
 }
 
-/* ===================== magic bento claim-type grid ===================== */
+/* --------------------- magic bento claim-type grid --------------------- */
 const CLAIM_TYPES = [
   { label: 'files', type: 'path_exists', desc: 'Referenced files and directories are resolved and confirmed present.' },
   { label: 'tooling', type: 'package_manager', desc: 'Declared manager checked against lockfiles and packageManager metadata.' },
@@ -953,7 +953,7 @@ function BentoGrid(){
   );
 }
 
-/* ===================== app ===================== */
+/* --------------------- app --------------------- */
 function App(){
   return (
     <div>

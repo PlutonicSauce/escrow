@@ -56,6 +56,8 @@ describe("local UI assets", () => {
       "These instructions do not match the repository.",
     );
     expect(APP_JAVASCRIPT).toContain("[outside repository] ");
+    expect(APP_JAVASCRIPT).toContain("function displayRepositoryEvidence");
+    expect(APP_JAVASCRIPT).toContain("displayRepositoryEvidence(item)");
     for (const label of [
       "Download JSON",
       "Download Markdown",
@@ -68,5 +70,39 @@ describe("local UI assets", () => {
     expect(STYLES_CSS).toContain("focus-visible");
     expect(APP_JAVASCRIPT).toContain("textContent");
     expect(APP_JAVASCRIPT).toContain("APPLY_VERIFIED_REPAIR");
+  });
+
+  it("renders deterministic evidence with safe repository-relative paths", () => {
+    const functionSource = APP_JAVASCRIPT.match(
+      /function displayRepositoryEvidence[\s\S]*?(?=\nfunction sourceLocation)/u,
+    )?.[0];
+    expect(functionSource).toBeDefined();
+    const createFormatter = new Function(
+      "state",
+      String(functionSource ?? "") + "; return displayRepositoryEvidence;",
+    ) as (state: {
+      report: { repositoryRoot: string };
+    }) => (value: string) => string;
+    const formatEvidence = createFormatter({
+      report: { repositoryRoot: "/Users/demo/repository" },
+    });
+
+    expect(
+      formatEvidence(
+        'Nearest package.json is "/Users/demo/repository/packages/api/package.json".',
+      ),
+    ).toBe('Nearest package.json is "packages/api/package.json".');
+    expect(
+      formatEvidence(
+        'Repository root "/Users/demo/repository" contains "/Users/demo/repository/pnpm-lock.yaml".',
+      ),
+    ).toBe('Repository root "." contains "pnpm-lock.yaml".');
+    expect(
+      formatEvidence(
+        'External path "/Users/demo/repository-other/secrets.txt" was rejected.',
+      ),
+    ).toBe(
+      'External path "/Users/demo/repository-other/secrets.txt" was rejected.',
+    );
   });
 });

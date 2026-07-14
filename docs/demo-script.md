@@ -17,6 +17,8 @@ codex login status
 npm run demo:reset
 escrow ui .escrow-demo/sample-monorepo \
   --model "${ESCROW_DEMO_MODEL:-gpt-5.6-terra}" --execute
+
+  --model "${ESCROW_DEMO_MODEL:-gpt-5.6-luna}" --execute
 ```
 
 Open the printed loopback URL. Before starting the clock, keep these ready:

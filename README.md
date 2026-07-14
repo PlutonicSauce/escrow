@@ -218,6 +218,10 @@ Override the model with `--model <model>` or `ESCROW_CODEX_MODEL`
 (`AGENTCONTRACT_CODEX_MODEL` remains supported for compatibility).
 Model availability depends on the authenticated account. The demo script uses
 `gpt-5.6-terra` by default and accepts `ESCROW_DEMO_MODEL` when another
+
+Override the model with `--model <model>` or `ESCROW_CODEX_MODEL`.
+Model availability depends on the authenticated account. The demo script uses
+`gpt-5.6-luna` by default and accepts `ESCROW_DEMO_MODEL` when another
 available GPT-5.6 variant is required.
 Codex never assigns pass/fail/warning/blocked/inconclusive/overridden verdicts,
 never determines instruction applicability, and never applies a repair.

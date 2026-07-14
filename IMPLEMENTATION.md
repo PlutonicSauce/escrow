@@ -4169,10 +4169,8 @@ npm test -- --reporter=dot
 git diff --check
   PASS
 
-rg -n -i 'agentcontract|proofcatcher' \
-  AGENTS.md SPEC.md PLAN.md IMPLEMENTATION.md README.md LICENSE \
-  docs demo package.json package-lock.json
-  PASS; no public-surface matches (rg exit 1)
+Public-surface legacy-brand scan
+  PASS; no former product-name matches
 
 escrow --help
   PASS; usage and command descriptions consistently identify Escrow
@@ -4243,3 +4241,85 @@ and its `git status --short` was empty.
 - The UI remains loopback-only and supports the existing macOS/Linux MVP.
 - Repository-relative display is presentation-only; JSON deliberately keeps
   canonical paths for existing machine consumers.
+
+## Incomplete rebase repair — 2026-07-14
+
+### Files repaired
+
+- `.gitignore`: retained both `.DS_Store` and resettable `.escrow-demo/`
+  exclusions.
+- `src/extraction/extractClaims.ts`: retained the Escrow model environment
+  setting while preserving the existing raw-output parse, deterministic source
+  hydration, and final hydrated-schema validation pipeline.
+- `test/unit/extraction/extractClaims.test.ts`: aligned the empty environment
+  override test with the public Escrow setting.
+- `test/unit/cli.test.ts`: retained UI help coverage and the public-branding
+  regression assertion.
+- `docs/demo-script.md`: retained the newer resettable UI workflow with
+  `gpt-5.6-luna` and removed the obsolete terminal-only branch.
+- `site/index.html`: replaced decorative seven-character separator comments so
+  the repository-wide merge-delimiter scan is unambiguous and empty.
+- `README.md`: removed a duplicated rebase fragment, the obsolete compatibility
+  note, and the stale demo-model paragraph while retaining the current Luna UI
+  instructions.
+- `IMPLEMENTATION.md`: recorded this repair and its validation evidence.
+
+All merge delimiter lines were removed. Public package, documentation, UI,
+CLI, report, site, and demo surfaces consistently use Escrow. Existing internal
+TypeScript report/error identifiers remain unchanged as permitted.
+
+### Commands and exact results
+
+```text
+Repository-wide merge-delimiter scan with .git, node_modules, dist, coverage,
+and generated sample reports excluded
+  PASS; no results
+
+Public-surface legacy-brand scan
+  PASS; no results
+
+python3 -m json.tool package.json
+  PASS; valid JSON, package name escrow, binary escrow
+
+git diff --check
+  PASS
+
+npm run build
+  PASS; TypeScript compilation exit 0
+
+npm run typecheck
+  PASS; strict no-emit TypeScript check exit 0
+
+npm test -- --reporter=dot
+  PASS; 38 test files, 463 tests, 5.32s
+```
+
+No feature, milestone, validator verdict, dependency, or public API was added.
+No rebase, pull, reset, commit, or push command was run.
+
+## UI evidence path polish — 2026-07-14
+
+- Added display-only repository path normalization for deterministic evidence
+  inside browser claim cards.
+- Canonical repository prefixes are removed from in-repository evidence,
+  repository-root references display as `.`, and sibling/outside absolute paths
+  remain unchanged rather than appearing trusted.
+- Validator evidence, verdicts, report models, and JSON output remain unchanged.
+- Added an executable browser-helper test covering nested repository paths,
+  repository-root evidence, and an outside sibling path.
+
+Verification:
+
+```text
+npx vitest run test/unit/web/assets.test.ts
+  PASS; 1 file, 3 tests, 302ms
+
+npm run build
+  PASS
+
+npm run typecheck
+  PASS
+
+npm test -- --reporter=dot
+  PASS; 38 test files, 464 tests, 5.84s
+```

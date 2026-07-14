@@ -79,6 +79,8 @@ export function resolveCodexModel(
   // ESCROW_CODEX_MODEL is the public setting. Keep the original variable as a
   // compatibility alias for existing AgentContract-era automation.
   const environmentModel = environment.ESCROW_CODEX_MODEL ?? environment.AGENTCONTRACT_CODEX_MODEL;
+
+  const environmentModel = environment.ESCROW_CODEX_MODEL;
   if (environmentModel !== undefined) {
     const model = environmentModel.trim();
     if (model.length === 0) {
