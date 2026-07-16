@@ -76,7 +76,7 @@ beforeEach(async () => {
   await cp(FIXTURE, repositoryRoot, { recursive: true });
   repositoryRoot = await realpath(repositoryRoot);
   git("init", "--quiet");
-  git("config", "user.name", "AgentContract Tests");
+  git("config", "user.name", "Escrow Tests");
   git("config", "user.email", "agentcontract@example.test");
   git("add", ".");
   git("commit", "--quiet", "-m", "fixture");

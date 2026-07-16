@@ -4947,17 +4947,16 @@ Devpost submission was performed.
 ### Repository and diff audit
 
 - Captured the dirty worktree, old SSH origin, `main` branch, latest five
-  commits, and every repository occurrence of the former ProofCatcher name
-  before editing.
+  commits, and every repository occurrence of the former product name before
+  editing.
 - Reviewed the complete tracked diff and every untracked workflow,
   documentation file, package script, and integration test. The pending files
   are intentional publication assets; no generated `dist`, coverage, package
   tarball, disposable demo checkout, credential, or local Codex-state file is
   included.
-- Reviewed all legacy-name matches individually. The only remaining
-  `ProofCatcher` strings are negative branding regression assertions in tests;
-  they are not URLs, product branding, documentation, or historical evidence
-  presented to judges.
+- Reviewed all legacy-name matches individually. Remaining legacy strings are
+  negative branding regression assertions in tests; they are not URLs,
+  product branding, documentation, or historical evidence presented to judges.
 - Scanned added content and the whole publication surface for secret/token
   shapes, private keys, unsupported metrics or adoption claims, absolute
   personal paths, conflict markers, accidental completed placeholders, and
@@ -5006,12 +5005,12 @@ git status --short
 git remote -v
 git branch --show-current
 git log -5 --oneline
-rg -n 'PlutonicSauce/ProofCatcher|github\\.com/PlutonicSauce/ProofCatcher|ProofCatcher' .
+Repository-wide canonical and legacy-name search
   PASS; initial state captured; every match reviewed
 
 Canonical and legacy URL scans
-  PASS; active surfaces use PlutonicSauce/escrow; only negative regression
-  assertions retain ProofCatcher
+  PASS; active surfaces use PlutonicSauce/escrow; legacy strings remain only
+  inside negative regression assertions
 
 Personal absolute-path scan across publication documentation
   PASS; no /Users path remains
@@ -5058,3 +5057,42 @@ git diff --check
 
 No commit, push, tag, publication, release, video upload, or Devpost submission
 was performed.
+
+## CI public-branding correction — 2026-07-16
+
+- Fixed the regular CI failure on submission commit `f7cb707`. The public
+  consistency test correctly found four historical sentences that repeated a
+  retired product name in this implementation log.
+- Rewrote those sentences generically while preserving their historical
+  meaning: the repository-name audit occurred, negative regression assertions
+  remain in tests, and active surfaces use the canonical Escrow repository.
+- Kept existing internal report type and factory identifiers because they are
+  valid current code identifiers. Kept the negative branding assertions intact
+  so the regression test remains effective.
+- Updated two temporary fixture Git author labels to Escrow. No runtime,
+  validator, report, repair, packaging, or workflow behavior changed.
+
+### Files changed
+
+- `IMPLEMENTATION.md`
+- `test/integration/command-execution/worktreeExecution.test.ts`
+- `test/integration/repair/repairWorkflow.test.ts`
+
+### Verification
+
+```text
+npx vitest run test/integration/demo/demoAssets.test.ts --reporter=dot
+  PASS; 1 file, 6 tests, 404ms
+
+npm run typecheck
+  PASS
+
+npm test -- --reporter=dot
+  PASS; 40 files, 478 tests, 7.41s
+
+npm run build
+  PASS
+```
+
+No test was weakened, removed, skipped, or excluded. No commit or push was
+performed.

@@ -97,7 +97,7 @@ async function createRepository(): Promise<string> {
   const repository = join(container, "repository");
   await cp(FIXTURE, repository, { recursive: true });
   git(repository, "init", "--quiet");
-  git(repository, "config", "user.name", "AgentContract Test");
+  git(repository, "config", "user.name", "Escrow Test");
   git(repository, "config", "user.email", "agentcontract@example.invalid");
   git(repository, "add", ".");
   git(repository, "commit", "--quiet", "-m", "fixture");
