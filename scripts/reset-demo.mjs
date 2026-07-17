@@ -26,11 +26,11 @@ runGit(["init", "--quiet"]);
 runGit(["config", "user.name", "Escrow Demo"]);
 runGit(["config", "user.email", "demo@example.invalid"]);
 runGit(["add", "."]);
-runGit(["commit", "--quiet", "-m", "broken demo baseline"]);
+runGit(["commit", "--quiet", "-m", "verified demo baseline"]);
 
 process.stdout.write(
   [
-    `Reset broken demo repository: ${destination}`,
+    `Reset verified demo repository: ${destination}`,
     "Start the UI with:",
     "  escrow ui .escrow-demo/sample-monorepo --model gpt-5.6-luna --execute",
     "",

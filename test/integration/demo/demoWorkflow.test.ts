@@ -1,5 +1,5 @@
 import { execFile } from "node:child_process";
-import { cp, mkdtemp, readFile, realpath, rm } from "node:fs/promises";
+import { cp, mkdtemp, readFile, realpath, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { promisify } from "node:util";
@@ -43,11 +43,23 @@ ${" "}
  - Run \`node scripts/healthcheck.mjs\` to verify the repository health check.
 `;
 
-async function createDemoRepository(): Promise<string> {
+const STALE_DEMO_INSTRUCTIONS = `# Sample monorepo instructions
+
+- Use npm as the package manager for this repository.
+- Read \`docs/DELETED_SETUP.md\` before changing workspace configuration.
+- Run unit tests with \`pnpm test\`.
+- Use the installed Jest dependency for unit tests.
+- Run \`node scripts/healthcheck.mjs\` to verify the repository health check.
+`;
+
+async function createDemoRepository(options: { stale?: boolean } = {}): Promise<string> {
   const container = await realpath(await mkdtemp(join(tmpdir(), "escrow-demo-test-")));
   temporaryDirectories.push(container);
   const repository = join(container, "sample-monorepo");
   await cp(SOURCE_DEMO, repository, { recursive: true });
+  if (options.stale === true) {
+    await writeFile(join(repository, "AGENTS.md"), STALE_DEMO_INSTRUCTIONS, "utf8");
+  }
   await execFileAsync("git", ["-C", repository, "init", "--quiet"]);
   await execFileAsync("git", ["-C", repository, "config", "user.name", "Escrow Test"]);
   await execFileAsync("git", ["-C", repository, "config", "user.email", "test@example.invalid"]);
@@ -215,7 +227,7 @@ afterEach(async () => {
 
 describe("Escrow demo workflow", () => {
   it("produces exactly four genuine failures and one passing safe command", async () => {
-    const repository = await createDemoRepository();
+    const repository = await createDemoRepository({ stale: true });
 
     const report = await createRepositoryReport(
       repository,
@@ -255,7 +267,7 @@ describe("Escrow demo workflow", () => {
   });
 
   it("treats the nested pnpm instruction as a valid override, not a conflict", async () => {
-    const repository = await createDemoRepository();
+    const repository = await createDemoRepository({ stale: true });
     const claims: RawExtractedClaim[] = [
       rootClaim(repository, {
         id: "root-manager",
@@ -298,7 +310,7 @@ describe("Escrow demo workflow", () => {
   });
 
   it("previews an instruction-only repair and revalidates it without changing the active repository", async () => {
-    const repository = await createDemoRepository();
+    const repository = await createDemoRepository({ stale: true });
     const activeInstructions = await readFile(join(repository, "AGENTS.md"), "utf8");
     const output: string[] = [];
     const result = await fixRepository(
@@ -351,7 +363,7 @@ describe("Escrow demo workflow", () => {
   });
 
   it("keeps console, JSON, Markdown, HTML, and UI totals identical", async () => {
-    const repository = await createDemoRepository();
+    const repository = await createDemoRepository({ stale: true });
     const report = await evaluateDemo(repository, { execute: true });
     const expectedSummary = {
       passed: 1,

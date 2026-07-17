@@ -17,7 +17,7 @@ const SAMPLE_REPOSITORY = join(DEMO_ROOT, "sample-monorepo");
 const SAMPLE_REPORTS = join(DEMO_ROOT, "sample-reports");
 
 describe("Milestone 13 demo assets", () => {
-  it("contains every intentional stale instruction and its repository evidence", async () => {
+  it("contains instructions that match the verified pnpm workspace", async () => {
     const [instructions, packageText, override] = await Promise.all([
       readFile(join(SAMPLE_REPOSITORY, "AGENTS.md"), "utf8"),
       readFile(join(SAMPLE_REPOSITORY, "package.json"), "utf8"),
@@ -29,20 +29,17 @@ describe("Milestone 13 demo assets", () => {
       devDependencies: Record<string, string>;
     };
 
-    expect(instructions).toContain("Use npm as the package manager");
-    expect(instructions).toContain("docs/DELETED_SETUP.md");
-    expect(instructions).toContain("`pnpm test`");
-    expect(instructions).toContain("installed Jest dependency");
+    expect(instructions).toContain("Use pnpm as the package manager");
+    expect(instructions).toContain("`pnpm test:unit`");
     expect(instructions).toContain("node scripts/healthcheck.mjs");
+    expect(instructions).not.toContain("DELETED_SETUP.md");
+    expect(instructions).not.toContain("Jest");
     expect(packageJson.packageManager).toBe("pnpm@10.0.0");
-    expect(packageJson.scripts.test).toBeUndefined();
     expect(packageJson.scripts["test:unit"]).toBeDefined();
     expect(packageJson.devDependencies.vitest).toBeDefined();
     expect(packageJson.devDependencies.jest).toBeUndefined();
     expect(override).toContain("use pnpm");
-    await expect(
-      access(join(SAMPLE_REPOSITORY, "docs/DELETED_SETUP.md")),
-    ).rejects.toThrow();
+    await expect(access(join(SAMPLE_REPOSITORY, "docs/architecture.md"))).resolves.toBeUndefined();
   });
 
   it("blocks the separate dangerous fixture deterministically", async () => {
