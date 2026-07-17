@@ -70,6 +70,9 @@ Type-specific fields:
 - advisory: include no optional claim metadata.
 
 Include optional fields only for claim types where the schema permits them.
+Classify an explicit npm, pnpm, or yarn command as package_script, not
+command_runs. A line that says an installed named tool is a dependency belongs
+to dependency_present, not package_script.
 Do not invent unsupported claim types or fields.
 
 Never assign or emit a verdict, validation result, quality score, evidence, or

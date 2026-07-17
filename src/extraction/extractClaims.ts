@@ -19,6 +19,7 @@ import {
 } from "../validation/conflictValidator.js";
 import { validateClaim } from "../validation/validateClaim.js";
 import { findDependencyMapping } from "../validation/dependencyMappings.js";
+import { normalizePackageScriptCommand } from "../utils/packageCommands.js";
 import {
   extractedClaimSchema,
   rawCodexExtractionResponseSchema,
@@ -164,6 +165,50 @@ function hasSourceGroundedPackageScript(claim: ExtractedClaim): boolean {
   );
 }
 
+function canonicalizeUnambiguousClaimType(
+  claim: ExtractedClaim,
+): ExtractedClaim {
+  if (claim.type === "command_runs" && claim.command !== undefined) {
+    const normalizedCommand = normalizePackageScriptCommand(claim.command);
+    if (
+      normalizedCommand.success &&
+      claim.originalText.toLocaleLowerCase().includes(claim.command.toLocaleLowerCase())
+    ) {
+      return {
+        ...claim,
+        type: "package_script",
+        normalizedValue: normalizedCommand.command.script,
+        packageManager: normalizedCommand.command.packageManager,
+        packageScript: normalizedCommand.command.script,
+      };
+    }
+  }
+
+  if (
+    claim.type === "package_script" &&
+    claim.packageScript !== undefined &&
+    /\bdependenc(?:y|ies)\b/iu.test(claim.originalText)
+  ) {
+    const mapping = findDependencyMapping(claim.packageScript);
+    if (mapping !== undefined) {
+      const {
+        command: _command,
+        packageManager: _packageManager,
+        packageScript: _packageScript,
+        ...dependencyClaim
+      } = claim;
+      return {
+        ...dependencyClaim,
+        type: "dependency_present",
+        normalizedValue: mapping.displayName,
+        dependencyNames: [...mapping.dependencyNames],
+      };
+    }
+  }
+
+  return claim;
+}
+
 function canonicalizeKnownDependencyMetadata(
   claim: ExtractedClaim,
 ): ExtractedClaim {
@@ -228,7 +273,11 @@ function hydrateClaimSources(
         `Hydrated claim "${claim.id}" failed ExtractedClaim schema validation: ${formatSchemaIssues(parsedHydratedClaim.error.issues)}.`,
       );
     }
-    return [canonicalizeKnownDependencyMetadata(parsedHydratedClaim.data)];
+    return [
+      canonicalizeKnownDependencyMetadata(
+        canonicalizeUnambiguousClaimType(parsedHydratedClaim.data),
+      ),
+    ];
   });
 
   return hydratedClaims.filter((claim) => {

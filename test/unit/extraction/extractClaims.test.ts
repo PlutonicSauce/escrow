@@ -92,9 +92,11 @@ const VALID_CLAIMS: ExtractedClaim[] = [
     normalizedValue: "Vitest",
     dependencyNames: ["vitest"],
   }),
-  claim("command_runs", 5, {
-    normalizedValue: "npm test",
+  claim("package_script", 5, {
+    normalizedValue: "test",
     command: "npm test",
+    packageManager: "npm",
+    packageScript: "test",
   }),
   claim("advisory", 6, {
     normalizedValue: "Prefer small, direct modules",
@@ -352,6 +354,51 @@ describe("extractClaims", () => {
 
     expect(hydrated?.normalizedValue).toBe("Jest");
     expect(hydrated?.dependencyNames).toEqual(["jest"]);
+  });
+
+  it("corrects unambiguous package commands and dependency wording to supported claim types", async () => {
+    const instruction = {
+      ...INSTRUCTION,
+      content: [
+        "- Run unit tests with `pnpm test`.",
+        "- Use the installed Jest dependency for unit tests.",
+      ].join("\n"),
+    };
+    const rawClaims: RawExtractedClaim[] = [
+      {
+        id: "command-instead-of-script",
+        type: "command_runs",
+        sourceFile: SOURCE_FILE,
+        lineStart: 1,
+        lineEnd: 1,
+        normalizedValue: "pnpm test",
+        command: "pnpm test",
+        confidence: 1,
+        extractionReason: "Explicit command.",
+      },
+      {
+        id: "script-instead-of-dependency",
+        type: "package_script",
+        sourceFile: SOURCE_FILE,
+        lineStart: 2,
+        lineEnd: 2,
+        normalizedValue: "Jest",
+        packageScript: "jest",
+        confidence: 1,
+        extractionReason: "Incorrect type.",
+      },
+    ];
+
+    const hydrated = await extractClaims({
+      repositoryRoot: REPOSITORY_ROOT,
+      instructionChain: [instruction],
+      runner: mockRunner(result({ stdout: JSON.stringify({ claims: rawClaims }) })),
+    });
+
+    expect(hydrated).toMatchObject([
+      { type: "package_script", packageManager: "pnpm", packageScript: "test" },
+      { type: "dependency_present", normalizedValue: "Jest", dependencyNames: ["jest"] },
+    ]);
   });
 
   it("discards a model claim with a source range outside the instruction file", async () => {
@@ -868,7 +915,7 @@ describe("extractClaims", () => {
       "package_manager",
       "package_script",
       "dependency_present",
-      "command_runs",
+      "package_script",
     ]);
     expect(extracted.validatedClaims[0]?.status).toBe("passed");
     expect(extracted.validatedClaims[4]?.status).toBe("inconclusive");
