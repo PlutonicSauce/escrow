@@ -160,8 +160,8 @@ ${Object.entries(CLAIM_STATUS_LABELS)
 <h1>Escrow Report</h1>
 <p class="overall overall-${report.overallStatus}">Overall status: ${escapeHtml(OVERALL_STATUS_LABELS[report.overallStatus])}</p>
 <dl class="meta">
-<div><dt>Repository</dt><dd><code>${escapeHtml(report.repositoryRoot)}</code></dd></div>
-<div><dt>Target directory</dt><dd><code>${escapeHtml(report.targetDirectory)}</code></dd></div>
+<div><dt>Repository</dt><dd><code>${escapeHtml(formatRepositoryDisplayPath(report.repositoryRoot, report.repositoryRoot))}</code></dd></div>
+<div><dt>Target directory</dt><dd><code>${escapeHtml(formatRepositoryDisplayPath(report.repositoryRoot, report.targetDirectory))}</code></dd></div>
 <div><dt>Generated</dt><dd>${escapeHtml(report.generatedAt)}</dd></div>
 <div><dt>Report version</dt><dd>${escapeHtml(report.version)}</dd></div>
 </dl>

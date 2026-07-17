@@ -283,6 +283,48 @@ describe("extractClaims", () => {
     expect(hydrated[0]?.id).toBe("valid-line");
   });
 
+  it("discards a package-script claim whose script is absent from its source instruction", async () => {
+    const healthcheckInstruction = {
+      ...INSTRUCTION,
+      content: "- Run `node scripts/healthcheck.mjs` to verify repository health.\n",
+    };
+    const inventedTestScript: RawExtractedClaim = {
+      id: "invented-test-script",
+      type: "package_script",
+      sourceFile: SOURCE_FILE,
+      lineStart: 1,
+      lineEnd: 1,
+      normalizedValue: "pnpm test",
+      packageManager: "pnpm",
+      packageScript: "test",
+      confidence: 0.9,
+      extractionReason: "Incorrectly inferred from health-check wording.",
+    };
+    const realCommand: RawExtractedClaim = {
+      id: "real-healthcheck",
+      type: "command_runs",
+      sourceFile: SOURCE_FILE,
+      lineStart: 1,
+      lineEnd: 1,
+      normalizedValue: "node scripts/healthcheck.mjs",
+      command: "node scripts/healthcheck.mjs",
+      confidence: 0.9,
+      extractionReason: "Explicit command.",
+    };
+
+    const hydrated = await extractClaims({
+      repositoryRoot: REPOSITORY_ROOT,
+      instructionChain: [healthcheckInstruction],
+      runner: mockRunner(
+        result({
+          stdout: JSON.stringify({ claims: [inventedTestScript, realCommand] }),
+        }),
+      ),
+    });
+
+    expect(hydrated.map((item) => item.id)).toEqual(["real-healthcheck"]);
+  });
+
   it("discards a model claim with a source range outside the instruction file", async () => {
     const invalidClaim: RawExtractedClaim = {
       id: "outside-source",

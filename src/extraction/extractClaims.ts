@@ -150,6 +150,19 @@ function getClaimContext(
     .join("\n");
 }
 
+function hasSourceGroundedPackageScript(claim: ExtractedClaim): boolean {
+  if (claim.type !== "package_script" || claim.packageScript === undefined) {
+    return true;
+  }
+
+  // A model may infer a familiar script name (for example, "test") from an
+  // unrelated command. Package-script verification is safe only when the
+  // actual script name came from the selected instruction text.
+  return claim.originalText.toLocaleLowerCase().includes(
+    claim.packageScript.toLocaleLowerCase(),
+  );
+}
+
 function hydrateClaimSources(
   claims: readonly RawExtractedClaim[],
   instructionChain: readonly InstructionFile[],
@@ -200,6 +213,9 @@ function hydrateClaimSources(
   });
 
   return hydratedClaims.filter((claim) => {
+    if (!hasSourceGroundedPackageScript(claim)) {
+      return false;
+    }
     if (claim.type !== "path_exists" || claim.referencedPath === undefined) {
       return true;
     }

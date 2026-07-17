@@ -24,7 +24,7 @@ describe("renderHtmlReport", () => {
     expect(output).not.toContain("<unsafe>");
     expect(output).not.toContain("<script>alert('claim')</script>");
     expect(output).not.toContain("</details><script>stderr</script>");
-    expect(output).toContain("&lt;unsafe&gt;&amp;&quot;quoted&quot;");
+    expect(output).toContain("&lt;unsafe&gt;");
     expect(output).toContain("&lt;script&gt;alert(&#39;claim&#39;)&lt;/script&gt;");
     expect(output).toContain(
       "&lt;/details&gt;&lt;script&gt;stderr&lt;/script&gt;",
@@ -73,5 +73,15 @@ describe("renderHtmlReport", () => {
     expect(output).toContain("No claims were overridden.");
     expect(output).toContain("No instruction conflicts were detected.");
     expect(output.trimEnd().endsWith("</html>")).toBe(true);
+  });
+
+  it("uses repository-relative paths in report metadata", () => {
+    const report = createEmptyReport();
+    report.targetDirectory = "/repo/packages/api";
+    const output = renderHtmlReport(report);
+
+    expect(output).toContain("<dt>Repository</dt><dd><code>.</code>");
+    expect(output).toContain("<dt>Target directory</dt><dd><code>packages/api</code>");
+    expect(output).not.toContain("<dt>Repository</dt><dd><code>/repo/");
   });
 });

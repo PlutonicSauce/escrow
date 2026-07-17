@@ -57,7 +57,10 @@ Type-specific fields:
   itself does not assert existence.
 - package_manager: include packageManager as npm, pnpm, or yarn.
 - package_script: include packageScript; include command and packageManager only
-  when the instruction explicitly supplies them.
+  when the instruction explicitly supplies them. The packageScript must appear
+  in the selected instruction text; never infer a familiar script such as
+  "test" from an unrelated command. For example, a \`node scripts/healthcheck.mjs\`
+  instruction is a command_runs claim, not a package_script claim.
 - dependency_present: set normalizedValue to only the concise framework or tool
   name, never a sentence (for example, "Jest"); include one or more normalized
   package names in dependencyNames.
